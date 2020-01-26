@@ -14,6 +14,12 @@
 #define MAX_LINEAR_VEL 1.15
 #define MIN_LINEAR_VEL -1.15
 
+// Encoder defines
+#define Left_Encoder_PinA 31
+#define Left_Encoder_PinB 32
+#define Right_Encoder_PinA 33
+#define Right_Encoder_PinB 34
+
 
 // include libraries
 #include <ros.h>
@@ -22,8 +28,16 @@
 #include <std_msgs/Int64.h>
 
 // global var(s)
+// motor PWM's
 int left_PWM = 0;
 int right_PWM = 0;
+// Encoder ticks
+volatile long Left_Encoder_Ticks = 0;
+//Variable to read current state of left encoder pin
+volatile bool LeftEncoderBSet;
+volatile long Right_Encoder_Ticks = 0;
+//Variable to read current state of right encoder pin
+volatile bool RightEncoderBSet;
 
 
 // callback functions have to be declared before their subscribers to compile
@@ -31,15 +45,23 @@ void cmd_cb(const geometry_msgs::Twist& msg);
 
 // nodehandle, publishers, subscribers
 ros::NodeHandle nh;
+// subscribers
 ros::Subscriber<geometry_msgs::Twist> cmd_sub("cmd_vel", &cmd_cb);
+// publishers (and the things they publish)
 std_msgs::String pub_string;
 ros::Publisher status_pub("cmd_vel_debug_topic", &pub_string);
 std_msgs::Int64 pwm_pub;
 ros::Publisher pwm_status("motor_pwm", &pwm_pub);
+std_msgs::Int64 enc_l;
+ros::Publisher left_enc_pub("encoder_left", &enc_l);
+std_msgs::Int64 enc_r;
+ros::Publisher right_enc_pub("encoder_right", &enc_r);
 
 // other functions
 void stop_moving();
 void right_motor(int pwm);
 void left_motor(int pwm);
+void do_right_encoder();
+void do_left_encoder();
 
 #endif

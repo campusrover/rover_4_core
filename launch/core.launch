@@ -1,5 +1,5 @@
 <launch>
-    <node name='enable_usb' tupe='enable_serial.sh' pkg='rover_4_core'/>
+    <!-- <node name='enable_usb' type='enable_serial.sh' pkg='rover_4_core'/> -->
     <node name='serial_node' type='serial_node.py' pkg='rosserial_python'>
         <param name='port' value='/dev/ttyACM0'/>
         <param name='baud' value='57600'/>    
