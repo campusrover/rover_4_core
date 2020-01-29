@@ -20,12 +20,18 @@
 #define Right_Encoder_PinA 33
 #define Right_Encoder_PinB 34
 
+// Sonar defines
+#define Trig 10
+#define Echo 9
+
 
 // include libraries
 #include <ros.h>
 #include <std_msgs/String.h>
 #include <geometry_msgs/Twist.h>
 #include <std_msgs/Int64.h>
+#include <sensor_msgs/Range.h>
+#include <std_msgs/Header.h>
 
 // global var(s)
 // motor PWM's
@@ -38,6 +44,8 @@ volatile bool LeftEncoderBSet;
 volatile long Right_Encoder_Ticks = 0;
 //Variable to read current state of right encoder pin
 volatile bool RightEncoderBSet;
+// Sonar 
+long duration, cm;
 
 
 // callback functions have to be declared before their subscribers to compile
@@ -56,12 +64,15 @@ std_msgs::Int64 enc_l;
 ros::Publisher left_enc_pub("encoder_left", &enc_l);
 std_msgs::Int64 enc_r;
 ros::Publisher right_enc_pub("encoder_right", &enc_r);
+sensor_msgs::Range sonar;
+ros::Publisher sonar_pub("sonar_front", &sonar);
+std_msgs::Header sonar_head;
 
 // other functions
-void stop_moving();
 void right_motor(int pwm);
 void left_motor(int pwm);
 void do_right_encoder();
 void do_left_encoder();
+void Update_Ultra_Sonic();
 
 #endif

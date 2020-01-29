@@ -54,7 +54,7 @@ void left_motor(int pwm) {
   } else {
     digitalWrite(INA_1,HIGH);
     digitalWrite(INB_1,LOW);
-    analogWrite(PWM_1, -pwm);
+    analogWrite(PWM_1, -pwm); // a negative pwm loops back around (?) so passing -2 will send a pwm of 253. --2 is 2 though (obviously)
   }
 }
 
@@ -70,16 +70,6 @@ void right_motor(int pwm) {
   }
 }
 
-void stop_moving() {
-  //Left Motor
-  digitalWrite(INA_1,HIGH);
-  digitalWrite(INB_1,HIGH);
-  analogWrite(PWM_1,0);
-  //Right Motor
-  digitalWrite(INA_2,HIGH);
-  digitalWrite(INB_2,HIGH);
-  analogWrite(PWM_2,0);
-}
 
 void do_Left_Encoder()
 {
@@ -93,6 +83,19 @@ void do_Right_Encoder()
   RightEncoderBSet = digitalRead(Right_Encoder_PinB);
   // read the input pin
   Right_Encoder_Ticks += RightEncoderBSet ? -1 : +1;
+}
+
+
+void Update_Ultra_Sonic()
+{
+  digitalWrite(Trig, LOW);
+  delayMicroseconds(2);
+  digitalWrite(Trig, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(Trig, LOW);
+  duration = pulseIn(Echo, HIGH);
+  // convert the time into a distance
+  cm = duration / 14.5;
 }
 
 void setup() {
@@ -115,12 +118,23 @@ void setup() {
   pinMode(Right_Encoder_PinA, INPUT_PULLUP); // sets pin A as input
   pinMode(Right_Encoder_PinB, INPUT_PULLUP); // sets pin B as input
   attachInterrupt(Right_Encoder_PinA, do_Right_Encoder, RISING);
+  // Sonar 
+  pinMode(Trig, OUTPUT); // trigger pin
+  pinMode(Echo, INPUT); // echo pin
+  sonar.radiation_type = sonar.ULTRASOUND;
+  sonar.field_of_view = 0.261799; // radians, adafruit's website cites a 15 degree FOV
+  sonar.min_range = 0.02;
+  sonar.max_range = 4; // some data sheets say 3m is max range, most others say 4, but also that measurements are most accurate < 250cm
+  sonar_head.frame_id = "base_link"; // this is an assumption, can be changed later
+  sonar_head.seq = 0;
+  sonar.header = sonar_head;
   // ROS
   nh.initNode();
   nh.subscribe(cmd_sub);
   nh.advertise(pwm_status);
   nh.advertise(left_enc_pub);
   nh.advertise(right_enc_pub);
+  nh.advertise(sonar_pub);
 }
 
 void loop() {
@@ -133,6 +147,11 @@ void loop() {
   enc_r.data = Right_Encoder_Ticks;
   left_enc_pub.publish(&enc_l);
   right_enc_pub.publish(&enc_r);
+  // Update sonar, then publish
+  Update_Ultra_Sonic();
+  sonar.range = cm / 100;
+  sonar_pub.publish(&sonar);
+  sonar_head.seq++;
   delay(100);
   nh.spinOnce();
   
