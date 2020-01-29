@@ -4,4 +4,5 @@
         <param name='port' value='/dev/ttyACM0'/>
         <param name='baud' value='57600'/>    
     </node>
+    <node name='odom_node' type='odom_tf.py' pkg='rover_4_core'/>
 </launch>

@@ -19,6 +19,9 @@
 #define Left_Encoder_PinB 32
 #define Right_Encoder_PinA 33
 #define Right_Encoder_PinB 34
+// set max and min encoder values to be 2^32. this could be higher
+#define ENCODER_MAX 4294967296
+#define ENCODER_MIN -4294967296
 
 // Sonar defines
 #define Trig 10

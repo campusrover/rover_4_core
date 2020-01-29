@@ -75,7 +75,12 @@ void do_Left_Encoder()
 {
   LeftEncoderBSet = digitalRead(Left_Encoder_PinB);
   // read the input pin
-  Left_Encoder_Ticks -= LeftEncoderBSet ? -1 : +1;
+  Left_Encoder_Ticks -= LeftEncoderBSet ? +1 : -1;
+  if (Left_Encoder_Ticks > ENCODER_MAX) {
+    Left_Encoder_Ticks = ENCODER_MIN + (Left_Encoder_Ticks - ENCODER_MAX);
+  } else if (Left_Encoder_Ticks < ENCODER_MIN) {
+    Left_Encoder_Ticks = ENCODER_MAX - (ENCODER_MIN - Left_Encoder_Ticks);
+  }
 }
 
 void do_Right_Encoder()
@@ -83,6 +88,11 @@ void do_Right_Encoder()
   RightEncoderBSet = digitalRead(Right_Encoder_PinB);
   // read the input pin
   Right_Encoder_Ticks += RightEncoderBSet ? -1 : +1;
+  if (Right_Encoder_Ticks > ENCODER_MAX) {
+    Right_Encoder_Ticks = ENCODER_MIN + (Right_Encoder_Ticks - ENCODER_MAX);
+  } else if (Right_Encoder_Ticks < ENCODER_MIN) {
+    Right_Encoder_Ticks = ENCODER_MAX - (ENCODER_MIN - Right_Encoder_Ticks);
+  }
 }
 
 
@@ -125,7 +135,7 @@ void setup() {
   sonar.field_of_view = 0.261799; // radians, adafruit's website cites a 15 degree FOV
   sonar.min_range = 0.02;
   sonar.max_range = 4; // some data sheets say 3m is max range, most others say 4, but also that measurements are most accurate < 250cm
-  sonar_head.frame_id = "base_link"; // this is an assumption, can be changed later
+  sonar_head.frame_id = "sonar"; // this is an assumption, can be changed later
   sonar_head.seq = 0;
   sonar.header = sonar_head;
   // ROS
@@ -145,11 +155,11 @@ void loop() {
   // update encoders and publish 
   enc_l.data = Left_Encoder_Ticks;
   enc_r.data = Right_Encoder_Ticks;
-  left_enc_pub.publish(&enc_l);
-  right_enc_pub.publish(&enc_r);
+  left_enc_pub.publish(&enc_r);  // objects are swapped because the wheels on the robot are reversed?
+  right_enc_pub.publish(&enc_l);
   // Update sonar, then publish
   Update_Ultra_Sonic();
-  sonar.range = cm / 100;
+  sonar.range = cm / 100.0;
   sonar_pub.publish(&sonar);
   sonar_head.seq++;
   delay(100);
