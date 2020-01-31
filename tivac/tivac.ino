@@ -11,8 +11,8 @@ void cmd_cb(const geometry_msgs::Twist& msg) {
   // angular component
   float angular_vel = msg.angular.z;
   // combine values 
-  float left_vel = 1.0 * linear_vel + angular_vel * width / 2.0;
-  float right_vel = 1.0 * linear_vel - angular_vel * width / 2.0;
+  float left_vel = 1.0 * linear_vel - angular_vel * width / 2.0;
+  float right_vel = 1.0 * linear_vel + angular_vel * width / 2.0;
   // constrain value (left)
   if (left_vel > MAX_LINEAR_VEL) {
     left_vel = MAX_LINEAR_VEL;
@@ -48,24 +48,24 @@ void cmd_cb(const geometry_msgs::Twist& msg) {
 
 void left_motor(int pwm) {
   if (pwm > 0) {
-    digitalWrite(INA_1,LOW);
-    digitalWrite(INB_1,HIGH);
-    analogWrite(PWM_1, pwm);
-  } else {
     digitalWrite(INA_1,HIGH);
     digitalWrite(INB_1,LOW);
+    analogWrite(PWM_1, pwm);
+  } else {
+    digitalWrite(INA_1,LOW);
+    digitalWrite(INB_1,HIGH);
     analogWrite(PWM_1, -pwm); // a negative pwm loops back around (?) so passing -2 will send a pwm of 253. --2 is 2 though (obviously)
   }
 }
 
 void right_motor(int pwm) {
   if (pwm > 0) {
-    digitalWrite(INA_2,HIGH);
-    digitalWrite(INB_2,LOW);
-    analogWrite(PWM_2, pwm);
-  } else {
     digitalWrite(INA_2,LOW);
     digitalWrite(INB_2,HIGH);
+    analogWrite(PWM_2, pwm);
+  } else {
+    digitalWrite(INA_2,HIGH);
+    digitalWrite(INB_2,LOW);
     analogWrite(PWM_2, -pwm);
   }
 }
@@ -155,8 +155,8 @@ void loop() {
   // update encoders and publish 
   enc_l.data = Left_Encoder_Ticks;
   enc_r.data = Right_Encoder_Ticks;
-  left_enc_pub.publish(&enc_r);  // objects are swapped because the wheels on the robot are reversed?
-  right_enc_pub.publish(&enc_l);
+  left_enc_pub.publish(&enc_l);  // objects are swapped because the wheels on the robot are reversed?
+  right_enc_pub.publish(&enc_r);
   // Update sonar, then publish
   Update_Ultra_Sonic();
   sonar.range = cm / 100.0;

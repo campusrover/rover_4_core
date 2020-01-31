@@ -2,23 +2,23 @@
 #define CMD_VEL_H_
 
 ///LeftMotor Pins
-#define INA_1 12
-#define INB_1 13
-#define PWM_1 PC_6
+#define INA_1 5
+#define INB_1 6
+#define PWM_1 PC_5
 ///Right Motor Pins
-#define INA_2 5
-#define INB_2 6
-#define PWM_2 PC_5
+#define INA_2 12
+#define INB_2 13
+#define PWM_2 PC_6
 
 // min and max vel
 #define MAX_LINEAR_VEL 1.15
 #define MIN_LINEAR_VEL -1.15
 
 // Encoder defines
-#define Left_Encoder_PinA 31
-#define Left_Encoder_PinB 32
-#define Right_Encoder_PinA 33
-#define Right_Encoder_PinB 34
+#define Left_Encoder_PinA 33
+#define Left_Encoder_PinB 34
+#define Right_Encoder_PinA 31
+#define Right_Encoder_PinB 32
 // set max and min encoder values to be 2^32. this could be higher
 #define ENCODER_MAX 4294967296
 #define ENCODER_MIN -4294967296
