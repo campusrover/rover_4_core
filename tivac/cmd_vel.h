@@ -29,12 +29,20 @@
 
 
 // include libraries
+#include "Wire.h"
+#include "I2Cdev.h"
+#include "MPU6050.h"
+
 #include <ros.h>
+#include <math.h>
 #include <std_msgs/String.h>
 #include <geometry_msgs/Twist.h>
 #include <std_msgs/Int64.h>
 #include <sensor_msgs/Range.h>
 #include <std_msgs/Header.h>
+#include <sensor_msgs/Imu.h>
+#include <geometry_msgs/Quaternion.h>
+#include <geometry_msgs/Vector3.h>
 
 // global var(s)
 // motor PWM's
@@ -49,6 +57,10 @@ volatile long Right_Encoder_Ticks = 0;
 volatile bool RightEncoderBSet;
 // Sonar 
 long duration, cm;
+// IMU
+MPU6050 accelgyro;
+int16_t ax, ay, az;
+int16_t gx, gy, gz;
 
 
 // callback functions have to be declared before their subscribers to compile
@@ -70,6 +82,8 @@ ros::Publisher right_enc_pub("encoder_right", &enc_r);
 sensor_msgs::Range sonar;
 ros::Publisher sonar_pub("sonar_front", &sonar);
 std_msgs::Header sonar_head;
+sensor_msgs::Imu imu;
+ros::Publisher imu_pub("imu", &imu);
 
 // other functions
 void right_motor(int pwm);

@@ -138,6 +138,10 @@ void setup() {
   sonar_head.frame_id = "sonar"; // this is an assumption, can be changed later
   sonar_head.seq = 0;
   sonar.header = sonar_head;
+  imu.header.frame_id = "imu";
+  imu.header.seq = 0;
+  Wire.begin();
+  accelgyro.initialize();
   // ROS
   nh.initNode();
   nh.subscribe(cmd_sub);
@@ -145,10 +149,21 @@ void setup() {
   nh.advertise(left_enc_pub);
   nh.advertise(right_enc_pub);
   nh.advertise(sonar_pub);
+  nh.advertise(imu_pub);
 }
 
 void loop() {
-  // put your main code here, to run repeatedly: 
+  updateMotors();
+  
+  updateSonar();
+  
+  updateIMU();
+  
+  delay(100);
+  nh.spinOnce();
+}
+
+void updateMotors() {
   // move the motors
   left_motor(left_PWM);
   right_motor(right_PWM);
@@ -157,12 +172,31 @@ void loop() {
   enc_r.data = Right_Encoder_Ticks;
   left_enc_pub.publish(&enc_l);  // objects are swapped because the wheels on the robot are reversed?
   right_enc_pub.publish(&enc_r);
+}
+
+void updateSonar() {
   // Update sonar, then publish
   Update_Ultra_Sonic();
   sonar.range = cm / 100.0;
   sonar_pub.publish(&sonar);
   sonar_head.seq++;
-  delay(100);
-  nh.spinOnce();
+}
+
+void updateIMU() {
+  accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
+
+  //angular velocity conversion
+  auto f = [](int16_t av) {return av * (4000.0/65536.0) * (M_PI/180.0) * 25.0;};
+  //linear acceleration conversation
+  auto g = [](int16_t la) {return la * (8.0 / 65536.0) * 9.81;};
   
+  imu.angular_velocity.x = f(gx);
+  imu.angular_velocity.y = f(gy);
+  imu.angular_velocity.z = f(gz);
+  
+  imu.linear_acceleration.x = g(ax);
+  imu.linear_acceleration.y = g(ay);
+  imu.linear_acceleration.z = g(az);
+
+  imu_pub.publish(&imu);
 }
