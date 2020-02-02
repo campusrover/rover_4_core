@@ -140,6 +140,8 @@ void setup() {
   sonar.header = sonar_head;
   imu.header.frame_id = "imu";
   imu.header.seq = 0;
+  Wire.begin(3);
+  Wire.setModule(3);
   Wire.begin();
   accelgyro.initialize();
   // ROS
