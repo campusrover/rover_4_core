@@ -9,6 +9,7 @@ project(rover_4_core)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   rospy
+  roscpp
   rosserial_python
   std_msgs
 )

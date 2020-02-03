@@ -95,19 +95,6 @@ void do_Right_Encoder()
   }
 }
 
-
-void Update_Ultra_Sonic()
-{
-  digitalWrite(Trig, LOW);
-  delayMicroseconds(2);
-  digitalWrite(Trig, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(Trig, LOW);
-  duration = pulseIn(Echo, HIGH);
-  // convert the time into a distance
-  cm = duration / 14.5;
-}
-
 void setup() {
   // put your setup code here, to run once:
   // Motors
@@ -138,10 +125,21 @@ void setup() {
   sonar_head.frame_id = "sonar"; // this is an assumption, can be changed later
   sonar_head.seq = 0;
   sonar.header = sonar_head;
+  // IMU
   imu.header.frame_id = "imu";
   imu.header.seq = 0;
+  Wire.begin(3);
+  Wire.setModule(3);
   Wire.begin();
+  
   accelgyro.initialize();
+  accelgyro.setXGyroOffset(-15);
+  accelgyro.setYGyroOffset(-115);
+  accelgyro.setZGyroOffset(-35);
+  accelgyro.setXAccelOffset(-1035);
+  accelgyro.setYAccelOffset(-1690);
+  accelgyro.setZAccelOffset(-215);
+
   // ROS
   nh.initNode();
   nh.subscribe(cmd_sub);
@@ -159,9 +157,23 @@ void loop() {
   
   updateIMU();
   
-  delay(100);
+  delay(10);
   nh.spinOnce();
 }
+
+
+void Update_Ultra_Sonic()
+{
+  digitalWrite(Trig, LOW);
+  delayMicroseconds(2);
+  digitalWrite(Trig, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(Trig, LOW);
+  duration = pulseIn(Echo, HIGH);
+  // convert the time into a distance
+  cm = duration / 14.5;
+}
+
 
 void updateMotors() {
   // move the motors
@@ -199,4 +211,5 @@ void updateIMU() {
   imu.linear_acceleration.z = g(az);
 
   imu_pub.publish(&imu);
+  imu.header.seq++;
 }
