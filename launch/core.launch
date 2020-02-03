@@ -15,7 +15,6 @@
         <remap from="camera_info" to="/camera/depth/camera_info"/>
     </node>
     <!-- generate tfs from urdf -->
-    <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher">
-        <param name="robot_description" textfile="$(find rover_4_core)/description/urdf/rover.xacro"/>
-    </node>
+    <param name="robot_description" textfile="$(find rover_4_core)/description/urdf/rover.xacro"/>
+    <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher"/>
 </launch>
