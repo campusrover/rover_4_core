@@ -1,5 +1,5 @@
 
-#include "cmd_vel.h"
+#include "tivac.h"
 
 
 void cmd_cb(const geometry_msgs::Twist& msg) {
@@ -166,13 +166,26 @@ void loop() {
 }
 
 void updateMotors() {
+  // ramp PWM
+  if (left_PWM - prev_left_PWM > RAMP_THRESHOLD){
+    left_PWM = prev_left_PWM + RAMP_FACTOR;
+  } else if (prev_left_PWM - left_PWM > RAMP_THRESHOLD) {
+    left_PWM = prev_left_PWM - RAMP_FACTOR;
+  }
+  if (right_PWM - prev_right_PWM > RAMP_THRESHOLD){
+    right_PWM = prev_right_PWM + RAMP_FACTOR;
+  } else if (prev_right_PWM - right_PWM > RAMP_THRESHOLD) {
+    right_PWM = prev_right_PWM - RAMP_FACTOR;
+  }
+  prev_left_PWM = left_PWM;
+  prev_right_PWM = right_PWM;
   // move the motors
   left_motor(left_PWM);
   right_motor(right_PWM);
   // update encoders and publish 
   enc_l.data = Left_Encoder_Ticks;
   enc_r.data = Right_Encoder_Ticks;
-  left_enc_pub.publish(&enc_l);  // objects are swapped because the wheels on the robot are reversed?
+  left_enc_pub.publish(&enc_l);  
   right_enc_pub.publish(&enc_r);
 }
 
@@ -201,4 +214,11 @@ void updateIMU() {
   imu.linear_acceleration.z = g(az);
 
   imu_pub.publish(&imu);
+}
+
+void update_battery() {
+  // may be useful in future, not necessary yet...
+  // https://www.instructables.com/id/Arduino-Battery-Voltage-Indicator/ gives a brief example of how to measure battery voltage 
+  battery_level = analogRead(PC_4) * (5.00 / 1023.00) * 2;
+  
 }
