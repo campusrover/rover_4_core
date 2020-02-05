@@ -105,7 +105,7 @@ void Update_Ultra_Sonic()
   digitalWrite(Trig, LOW);
   duration = pulseIn(Echo, HIGH);
   // convert the time into a distance
-  cm = duration / 14.5;
+  cm = duration / 58; // / 29 / 2
 }
 
 void setup() {
@@ -140,13 +140,15 @@ void setup() {
   sonar.header = sonar_head;
   imu.header.frame_id = "imu";
   imu.header.seq = 0;
-  
+  //This wire setup KILLS rosserial communication, from 8.6hz to 0.4hz
   Wire.begin(3);
   Wire.setModule(3);
-  Wire.begin();
+  //Wire.begin();
   accelgyro.initialize();
-  
+  delay(500);
+  //Wire.endTransmission(); // added in hopes it might save us
   // ROS
+  nh.getHardware()->setBaud(115200);
   nh.initNode();
   nh.subscribe(cmd_sub);
   nh.advertise(pwm_status);
@@ -155,6 +157,7 @@ void setup() {
   nh.advertise(sonar_pub);
   nh.advertise(imu_pub);
   //delay(1000);
+  
 }
 
 void loop() {
@@ -162,7 +165,7 @@ void loop() {
   
   updateSonar();
   
-  updateIMU();
+  //updateIMU();
   
   delay(100);
   nh.spinOnce();

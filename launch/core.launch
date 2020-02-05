@@ -2,7 +2,7 @@
     <!-- Rosserial node for communicating with tivac node over usb serial-->
     <node name='serial_node' type='serial_node.py' pkg='rosserial_python'>
         <param name='port' value='/dev/ttyACM0'/>
-        <param name='baud' value='57600'/>    
+        <param name='baud' value='115200'/>    
     </node>
     <!-- Odometry topic and tf publisher-->
     <node name='odom_node' type='odom_tf.py' pkg='rover_4_core'/>
