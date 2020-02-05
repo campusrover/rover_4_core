@@ -135,15 +135,17 @@ void setup() {
   sonar.field_of_view = 0.261799; // radians, adafruit's website cites a 15 degree FOV
   sonar.min_range = 0.02;
   sonar.max_range = 4; // some data sheets say 3m is max range, most others say 4, but also that measurements are most accurate < 250cm
-  sonar_head.frame_id = "sonar"; // this is an assumption, can be changed later
+  sonar_head.frame_id = "sonar_link"; // this is an assumption, can be changed later
   sonar_head.seq = 0;
   sonar.header = sonar_head;
   imu.header.frame_id = "imu";
   imu.header.seq = 0;
+  
   Wire.begin(3);
   Wire.setModule(3);
   Wire.begin();
   accelgyro.initialize();
+  
   // ROS
   nh.initNode();
   nh.subscribe(cmd_sub);
@@ -152,6 +154,7 @@ void setup() {
   nh.advertise(right_enc_pub);
   nh.advertise(sonar_pub);
   nh.advertise(imu_pub);
+  //delay(1000);
 }
 
 void loop() {
@@ -168,20 +171,24 @@ void loop() {
 void updateMotors() {
   // ramp PWM
   if (left_PWM - prev_left_PWM > RAMP_THRESHOLD){
-    left_PWM = prev_left_PWM + RAMP_FACTOR;
+    left_PWM_out = prev_left_PWM + RAMP_FACTOR;
   } else if (prev_left_PWM - left_PWM > RAMP_THRESHOLD) {
-    left_PWM = prev_left_PWM - RAMP_FACTOR;
+    left_PWM_out = prev_left_PWM - RAMP_FACTOR;
+  } else {
+    left_PWM_out = left_PWM;
   }
   if (right_PWM - prev_right_PWM > RAMP_THRESHOLD){
-    right_PWM = prev_right_PWM + RAMP_FACTOR;
+    right_PWM_out = prev_right_PWM + RAMP_FACTOR;
   } else if (prev_right_PWM - right_PWM > RAMP_THRESHOLD) {
-    right_PWM = prev_right_PWM - RAMP_FACTOR;
+    right_PWM_out = prev_right_PWM - RAMP_FACTOR;
+  } else {
+    right_PWM_out = right_PWM;
   }
-  prev_left_PWM = left_PWM;
-  prev_right_PWM = right_PWM;
+  prev_left_PWM = left_PWM_out;
+  prev_right_PWM = right_PWM_out;
   // move the motors
-  left_motor(left_PWM);
-  right_motor(right_PWM);
+  left_motor(left_PWM_out);
+  right_motor(right_PWM_out);
   // update encoders and publish 
   enc_l.data = Left_Encoder_Ticks;
   enc_r.data = Right_Encoder_Ticks;

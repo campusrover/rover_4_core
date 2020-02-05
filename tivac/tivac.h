@@ -49,8 +49,13 @@
 
 // global var(s)
 // motor PWM's
+// Target PWM set based on twist
 int left_PWM = 0;
 int right_PWM = 0;
+// PWM that is actuallys ent to motor (by ramp)
+int left_PWM_out = 0;
+int right_PWM_out = 0;
+// previous PWM (from ramp)
 int prev_left_PWM = 0;
 int prev_right_PWM = 0;
 // Encoder ticks
