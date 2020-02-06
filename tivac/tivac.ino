@@ -1,5 +1,5 @@
 
-#include "cmd_vel.h"
+#include "tivac.h"
 
 
 void cmd_cb(const geometry_msgs::Twist& msg) {
@@ -95,6 +95,22 @@ void do_Right_Encoder()
   }
 }
 
+<<<<<<< HEAD
+=======
+
+void Update_Ultra_Sonic()
+{
+  digitalWrite(Trig, LOW);
+  delayMicroseconds(2);
+  digitalWrite(Trig, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(Trig, LOW);
+  duration = pulseIn(Echo, HIGH);
+  // convert the time into a distance
+  cm = duration / 58; // / 29 / 2
+}
+
+>>>>>>> 67dd9cfa2909181925666be8b8ff45795cef671c
 void setup() {
   // put your setup code here, to run once:
   // Motors
@@ -122,14 +138,16 @@ void setup() {
   sonar.field_of_view = 0.261799; // radians, adafruit's website cites a 15 degree FOV
   sonar.min_range = 0.02;
   sonar.max_range = 4; // some data sheets say 3m is max range, most others say 4, but also that measurements are most accurate < 250cm
-  sonar_head.frame_id = "sonar"; // this is an assumption, can be changed later
+  sonar_head.frame_id = "sonar_link"; // this is an assumption, can be changed later
   sonar_head.seq = 0;
   sonar.header = sonar_head;
   // IMU
   imu.header.frame_id = "imu";
   imu.header.seq = 0;
+  //This wire setup KILLS rosserial communication, from 8.6hz to 0.4hz
   Wire.begin(3);
   Wire.setModule(3);
+<<<<<<< HEAD
   Wire.begin();
   
   accelgyro.initialize();
@@ -140,7 +158,14 @@ void setup() {
   accelgyro.setYAccelOffset(-1690);
   accelgyro.setZAccelOffset(-215);
 
+=======
+  //Wire.begin();
+  accelgyro.initialize();
+  delay(500);
+  //Wire.endTransmission(); // added in hopes it might save us
+>>>>>>> 67dd9cfa2909181925666be8b8ff45795cef671c
   // ROS
+  nh.getHardware()->setBaud(115200);
   nh.initNode();
   nh.subscribe(cmd_sub);
   nh.advertise(pwm_status);
@@ -148,6 +173,8 @@ void setup() {
   nh.advertise(right_enc_pub);
   nh.advertise(sonar_pub);
   nh.advertise(imu_pub);
+  //delay(1000);
+  
 }
 
 void loop() {
@@ -155,7 +182,7 @@ void loop() {
   
   updateSonar();
   
-  updateIMU();
+  //updateIMU();
   
   delay(10);
   nh.spinOnce();
@@ -176,13 +203,30 @@ void Update_Ultra_Sonic()
 
 
 void updateMotors() {
+  // ramp PWM
+  if (left_PWM - prev_left_PWM > RAMP_THRESHOLD){
+    left_PWM_out = prev_left_PWM + RAMP_FACTOR;
+  } else if (prev_left_PWM - left_PWM > RAMP_THRESHOLD) {
+    left_PWM_out = prev_left_PWM - RAMP_FACTOR;
+  } else {
+    left_PWM_out = left_PWM;
+  }
+  if (right_PWM - prev_right_PWM > RAMP_THRESHOLD){
+    right_PWM_out = prev_right_PWM + RAMP_FACTOR;
+  } else if (prev_right_PWM - right_PWM > RAMP_THRESHOLD) {
+    right_PWM_out = prev_right_PWM - RAMP_FACTOR;
+  } else {
+    right_PWM_out = right_PWM;
+  }
+  prev_left_PWM = left_PWM_out;
+  prev_right_PWM = right_PWM_out;
   // move the motors
-  left_motor(left_PWM);
-  right_motor(right_PWM);
+  left_motor(left_PWM_out);
+  right_motor(right_PWM_out);
   // update encoders and publish 
   enc_l.data = Left_Encoder_Ticks;
   enc_r.data = Right_Encoder_Ticks;
-  left_enc_pub.publish(&enc_l);  // objects are swapped because the wheels on the robot are reversed?
+  left_enc_pub.publish(&enc_l);  
   right_enc_pub.publish(&enc_r);
 }
 
@@ -215,4 +259,11 @@ void updateIMU() {
   imu.header.seq++;
 =======
 >>>>>>> 61109f25f130fa2c1cf2a9b2093681acaca929ee
+}
+
+void update_battery() {
+  // may be useful in future, not necessary yet...
+  // https://www.instructables.com/id/Arduino-Battery-Voltage-Indicator/ gives a brief example of how to measure battery voltage 
+  battery_level = analogRead(PC_4) * (5.00 / 1023.00) * 2;
+  
 }

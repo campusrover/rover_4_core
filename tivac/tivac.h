@@ -1,5 +1,5 @@
-#ifndef CMD_VEL_H_
-#define CMD_VEL_H_
+#ifndef TIVAC_H_
+#define TIVAC_H_
 
 ///LeftMotor Pins
 #define INA_1 5
@@ -13,6 +13,9 @@
 // min and max vel
 #define MAX_LINEAR_VEL 1.15
 #define MIN_LINEAR_VEL -1.15
+// ramp values - basically saying that if the difference in PWM's over time is grater than RAMP_THRESHOLD, then PWM will increment by RAMP_FACTOR
+#define RAMP_FACTOR 10
+#define RAMP_THRESHOLD 15
 
 // Encoder defines
 #define Left_Encoder_PinA 33
@@ -46,8 +49,15 @@
 
 // global var(s)
 // motor PWM's
+// Target PWM set based on twist
 int left_PWM = 0;
 int right_PWM = 0;
+// PWM that is actuallys ent to motor (by ramp)
+int left_PWM_out = 0;
+int right_PWM_out = 0;
+// previous PWM (from ramp)
+int prev_left_PWM = 0;
+int prev_right_PWM = 0;
 // Encoder ticks
 volatile long Left_Encoder_Ticks = 0;
 //Variable to read current state of left encoder pin
@@ -61,6 +71,8 @@ long duration, cm;
 MPU6050 accelgyro;
 int16_t ax, ay, az;
 int16_t gx, gy, gz;
+// battery
+float battery_level = 12; // why not? this is the default value from the book
 
 
 // callback functions have to be declared before their subscribers to compile
@@ -91,5 +103,8 @@ void left_motor(int pwm);
 void do_right_encoder();
 void do_left_encoder();
 void Update_Ultra_Sonic();
+void updateMotors();
+void updateSonar();
+void updateIMU();
 
 #endif

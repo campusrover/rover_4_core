@@ -1,0 +1,106 @@
+<?xml version="1.0"?>
+<!-- A very basic urdf for our rover prototype -->
+<robot name="rover_prototype">
+    <material name="blue">
+        <color rgba="0 0 0.8 1"/>
+    </material>
+   
+    <material name="white">
+        <color rgba="1 1 1 1"/>
+    </material>
+
+    <material name="green">
+        <color rgba="0 0.8 0 1"/>
+    </material>
+
+    <material name="red">
+        <color rgba="0.8 0 0 1"/>
+    </material>
+
+    <material name="black">
+        <color rgba="0 0 0 1"/>
+    </material>
+
+    <link name="base_footprint">
+
+    </link>
+    <joint name="footprint_to_base" type="fixed">
+        <parent link="base_footprint"/>
+        <child link="base_link"/>
+        <origin rpy="0 0 0" xyz="0 0 .025"/>
+    </joint>
+
+    <link name="base_link">
+        <visual>
+            <geometry>
+                <box size="0.28 0.28 0.06"/>
+            </geometry>
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <material name="red"/>
+        </visual>
+    </link>
+
+    <joint name="camera_to_base" type="fixed">
+        <parent link="base_link"/>
+        <child link="camera_link"/>
+        <origin rpy="0 0 0" xyz="0.12 0 0.06"/>
+    </joint>
+
+    <link name="camera_link">
+        <visual>
+            <geometry>
+                <box size="0.04 0.16 0.05"/>
+            </geometry>
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <material name="green"/>
+        </visual>
+    </link>
+
+    <joint name="sonar_to_base" type="fixed">
+        <parent link="base_link"/>
+        <child link="sonar_link"/>
+        <origin rpy="0 0 0" xyz="0.13 0 0.03"/>
+    </joint>
+
+    <link name="sonar_link">
+        <visual>
+            <geometry>
+                <box size="0.02 0.04 0.03"/>
+            </geometry>
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <material name="white"/>
+        </visual>
+    </link>
+
+    <joint name="lwheel_to_base" type="continuous">
+        <parent link="base_link"/>
+        <child link="lwheel_link"/>
+        <origin rpy="1.57 0 0" xyz="0 0.14 0"/>
+    </joint>
+
+    <link name="lwheel_link">
+        <visual>
+            <geometry>
+                <cylinder radius="0.045" length="0.01"/>
+            </geometry>
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <material name="blue"/>
+        </visual>
+    </link>
+
+    <joint name="rwheel_to_base" type="continuous">
+        <parent link="base_link"/>
+        <child link="rwheel_link"/>
+        <origin rpy="-1.57 0 0" xyz="0 -0.14 0"/>
+    </joint>
+
+    <link name="rwheel_link">
+        <visual>
+            <geometry>
+                <cylinder radius="0.045" length="0.01"/>
+            </geometry>
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <material name="blue"/>
+        </visual>
+    </link>
+</robot>
