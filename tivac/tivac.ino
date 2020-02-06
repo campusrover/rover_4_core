@@ -211,5 +211,8 @@ void updateIMU() {
   imu.linear_acceleration.z = g(az);
 
   imu_pub.publish(&imu);
+<<<<<<< HEAD
   imu.header.seq++;
+=======
+>>>>>>> 61109f25f130fa2c1cf2a9b2093681acaca929ee
 }
