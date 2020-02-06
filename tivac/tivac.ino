@@ -95,8 +95,6 @@ void do_Right_Encoder()
   }
 }
 
-<<<<<<< HEAD
-=======
 
 void Update_Ultra_Sonic()
 {
@@ -110,7 +108,6 @@ void Update_Ultra_Sonic()
   cm = duration / 58; // / 29 / 2
 }
 
->>>>>>> 67dd9cfa2909181925666be8b8ff45795cef671c
 void setup() {
   // put your setup code here, to run once:
   // Motors
@@ -147,7 +144,6 @@ void setup() {
   //This wire setup KILLS rosserial communication, from 8.6hz to 0.4hz
   Wire.begin(3);
   Wire.setModule(3);
-<<<<<<< HEAD
   Wire.begin();
   
   accelgyro.initialize();
@@ -158,12 +154,9 @@ void setup() {
   accelgyro.setYAccelOffset(-1690);
   accelgyro.setZAccelOffset(-215);
 
-=======
-  //Wire.begin();
   accelgyro.initialize();
   delay(500);
-  //Wire.endTransmission(); // added in hopes it might save us
->>>>>>> 67dd9cfa2909181925666be8b8ff45795cef671c
+
   // ROS
   nh.getHardware()->setBaud(115200);
   nh.initNode();
@@ -255,10 +248,7 @@ void updateIMU() {
   imu.linear_acceleration.z = g(az);
 
   imu_pub.publish(&imu);
-<<<<<<< HEAD
   imu.header.seq++;
-=======
->>>>>>> 61109f25f130fa2c1cf2a9b2093681acaca929ee
 }
 
 void update_battery() {
