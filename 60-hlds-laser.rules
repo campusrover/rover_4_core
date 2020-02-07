@@ -1,3 +1,6 @@
 # On precise, for some reason, USER and GROUP are getting ignored. 
 # So setting mode = 0666 for now. 
-SUBSYSTEM=="tty", ATTRS{idVendor}=="05e3", ATTRS{idProduct}=="0610", MODE:="0666", GROUP:="dialout", SYMLINK+="LDS01"
+# this one some guy made on github, says to connect through /dev/LDS01
+#SUBSYSTEM=="tty", ATTRS{idVendor}=="05e3", ATTRS{idProduct}=="0610", MODE:="0666", GROUP:="dialout", SYMLINK+="LDS01"
+# this one is from the TB3 udev rules, connect through /dev/ttyUSB0
+ATTRS{idVendor}=="10c4" ATTRS{idProduct}=="ea60", ENV{ID_MM_DEVICE_IGNORE}="1", MODE:="0666"
