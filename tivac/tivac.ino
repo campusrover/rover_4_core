@@ -138,15 +138,25 @@ void setup() {
   sonar_head.frame_id = "sonar_link"; // this is an assumption, can be changed later
   sonar_head.seq = 0;
   sonar.header = sonar_head;
+  // IMU
   imu.header.frame_id = "imu";
   imu.header.seq = 0;
   //This wire setup KILLS rosserial communication, from 8.6hz to 0.4hz
   Wire.begin(3);
   Wire.setModule(3);
-  //Wire.begin();
+  Wire.begin();
+  
+  accelgyro.initialize();
+  accelgyro.setXGyroOffset(-15);
+  accelgyro.setYGyroOffset(-115);
+  accelgyro.setZGyroOffset(-35);
+  accelgyro.setXAccelOffset(-1035);
+  accelgyro.setYAccelOffset(-1690);
+  accelgyro.setZAccelOffset(-215);
+
   accelgyro.initialize();
   delay(500);
-  //Wire.endTransmission(); // added in hopes it might save us
+
   // ROS
   nh.getHardware()->setBaud(115200);
   nh.initNode();
@@ -167,9 +177,23 @@ void loop() {
   
   //updateIMU();
   
-  delay(100);
+  delay(10);
   nh.spinOnce();
 }
+
+
+void Update_Ultra_Sonic()
+{
+  digitalWrite(Trig, LOW);
+  delayMicroseconds(2);
+  digitalWrite(Trig, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(Trig, LOW);
+  duration = pulseIn(Echo, HIGH);
+  // convert the time into a distance
+  cm = duration / 14.5;
+}
+
 
 void updateMotors() {
   // ramp PWM
@@ -224,6 +248,7 @@ void updateIMU() {
   imu.linear_acceleration.z = g(az);
 
   imu_pub.publish(&imu);
+  imu.header.seq++;
 }
 
 void update_battery() {
