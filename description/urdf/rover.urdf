@@ -33,9 +33,9 @@
     <link name="base_link">
         <visual>
             <geometry>
-                <box size="0.28 0.28 0.06"/>
+                <box size="0.28 0.28 0.12"/>
             </geometry>
-            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <origin rpy="0 0 0" xyz="0 0 0.06"/>
             <material name="red"/>
         </visual>
     </link>
@@ -69,6 +69,22 @@
             </geometry>
             <origin rpy="0 0 0" xyz="0 0 0"/>
             <material name="white"/>
+        </visual>
+    </link>
+
+    <joint name="lidar_to_base" type="fixed">
+        <parent link="base_link"/>
+        <child link="scan_link"/>
+        <origin rpy="0 0 0" xyz="0.06 0 0.12"/>
+    </joint>
+
+    <link name="scan_link">
+        <visual>
+            <geometry>
+                <cylinder radius="0.03" length="0.04"/>
+            </geometry>
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <material name="black"/>
         </visual>
     </link>
 

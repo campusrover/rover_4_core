@@ -13,10 +13,19 @@
         <param name="scan_height" value="10"/>
         <remap from="image" to="/camera/depth/image_raw"/>
         <remap from="camera_info" to="/camera/depth/camera_info"/>
+        <remap from="scan" to="depth_scan"/>
     </node>
     <!-- generate tfs from urdf -->
     <arg name="urdf_file" default="$(find xacro)/xacro --inorder '$(find rover_4_core)/description/urdf/rover.urdf'" />
     <param name="robot_description" command="$(arg urdf_file)" />
     <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
     <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+    <!-- LDS-01 lidar -->
+    <arg name="set_frame_id" default="scan_link"/>
+
+    <node pkg="hls_lfcd_lds_driver" type="hlds_laser_publisher" name="turtlebot3_lds" output="screen">
+        <param name="port" value="/dev/ttyUSB0"/>
+        <param name="frame_id" value="$(arg set_frame_id)"/>
+    </node>
+
 </launch>
