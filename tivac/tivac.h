@@ -26,9 +26,9 @@
 #define ENCODER_MAX 4294967296
 #define ENCODER_MIN -4294967296
 
-// Sonar defines
-#define Trig 10
-#define Echo 9
+//// Sonar defines
+//#define Trig 10
+//#define Echo 9
 
 
 // include libraries
@@ -65,8 +65,8 @@ volatile bool LeftEncoderBSet;
 volatile long Right_Encoder_Ticks = 0;
 //Variable to read current state of right encoder pin
 volatile bool RightEncoderBSet;
-// Sonar 
-long duration, cm;
+//// Sonar 
+//long duration, cm;
 // IMU
 MPU6050 accelgyro;
 int16_t ax, ay, az;
@@ -91,9 +91,9 @@ std_msgs::Int64 enc_l;
 ros::Publisher left_enc_pub("encoder_left", &enc_l);
 std_msgs::Int64 enc_r;
 ros::Publisher right_enc_pub("encoder_right", &enc_r);
-sensor_msgs::Range sonar;
-ros::Publisher sonar_pub("sonar_front", &sonar);
-std_msgs::Header sonar_head;
+//sensor_msgs::Range sonar;
+//ros::Publisher sonar_pub("sonar_front", &sonar);
+//std_msgs::Header sonar_head;
 sensor_msgs::Imu imu;
 ros::Publisher imu_pub("imu", &imu);
 
@@ -102,9 +102,9 @@ void right_motor(int pwm);
 void left_motor(int pwm);
 void do_right_encoder();
 void do_left_encoder();
-void Update_Ultra_Sonic();
 void updateMotors();
-void updateSonar();
+//void Update_Ultra_Sonic();
+//void updateSonar();
 void updateIMU();
 
 #endif
