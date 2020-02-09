@@ -108,6 +108,7 @@ void do_Right_Encoder()
 //  cm = duration / 58; // / 29 / 2
 //}
 
+void setup() {
   // put your setup code here, to run once:
   // Motors
   //Setting Left Motor pin as OUTPUT
@@ -228,14 +229,14 @@ void updateIMU() {
   imu.linear_acceleration.x = g(ax);
   imu.linear_acceleration.y = g(ay);
   imu.linear_acceleration.z = g(az);
-
+  
 //@debug
-  Serial.print(imu.angular_velocity.x); Serial.print("\t");
-  Serial.print(imu.angular_velocity.y); Serial.print("\t");
-  Serial.print(imu.angular_velocity.z); Serial.print("\t");
-  Serial.print(imu.linear_acceleration.x); Serial.print("\t");
-  Serial.print(imu.linear_acceleration.y); Serial.print("\t");
-  Serial.println(imu.linear_acceleration.z);
+//  Serial.print(imu.angular_velocity.x); Serial.print("\t");
+//  Serial.print(imu.angular_velocity.y); Serial.print("\t");
+//  Serial.print(imu.angular_velocity.z); Serial.print("\t");
+//  Serial.print(imu.linear_acceleration.x); Serial.print("\t");
+//  Serial.print(imu.linear_acceleration.y); Serial.print("\t");
+//  Serial.println(imu.linear_acceleration.z);
 
   imu_pub.publish(&imu);
   imu.header.seq++;
