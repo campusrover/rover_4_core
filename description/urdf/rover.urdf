@@ -38,6 +38,11 @@
             <origin rpy="0 0 0" xyz="0 0 0.06"/>
             <material name="red"/>
         </visual>
+        <collision>
+            <geometry>
+                <box size="0.32 0.32 0.12"/>
+            </geometry>
+        </collision>
     </link>
 
     <joint name="camera_to_base" type="fixed">
