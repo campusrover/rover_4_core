@@ -108,7 +108,7 @@ void Update_Ultra_Sonic()
   digitalWrite(Trig, LOW);
 //  duration = pulseIn(Echo, HIGH);
   // convert the time into a distance
-  cm = duration / 58; // / 29 / 2
+//  cm = duration / 58; // / 29 / 2
 }
 
 void setup() {
@@ -155,7 +155,7 @@ void setup() {
   accelgyro.setZGyroOffset(-35);
   accelgyro.setXAccelOffset(-1035);
   accelgyro.setYAccelOffset(-1690);
-  accelgyro.setZAccelOffset(-215);
+  accelgyro.setZAccelOffset(-1145);
 
   // ROS
   nh.getHardware()->setBaud(115200);
@@ -221,9 +221,9 @@ void updateIMU() {
   accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
 
   //angular velocity conversion
-  auto f = [](int16_t av) {return av * (4000.0/65536.0) * (M_PI/180.0) * 25.0;};
+  auto f = [](int16_t av) {return av * (4000.0/65536.0) * (M_PI/180.0) / 25.0;};
   //linear acceleration conversation
-  auto g = [](int16_t la) {return la * (8.0 / 65536.0) * 9.81;};
+  auto g = [](int16_t la) {return la * (8.0 / 65536.0);};
   
   imu.angular_velocity.x = f(gx);
   imu.angular_velocity.y = f(gy);
@@ -234,12 +234,12 @@ void updateIMU() {
   imu.linear_acceleration.z = g(az);
   
 //@debug
-  Serial.print(imu.angular_velocity.x); Serial.print("\t");
-  Serial.print(imu.angular_velocity.y); Serial.print("\t");
-  Serial.print(imu.angular_velocity.z); Serial.print("\t");
-  Serial.print(imu.linear_acceleration.x); Serial.print("\t");
-  Serial.print(imu.linear_acceleration.y); Serial.print("\t");
-  Serial.println(imu.linear_acceleration.z);
+//  Serial.print(imu.angular_velocity.x); Serial.print("\t");
+//  Serial.print(imu.angular_velocity.y); Serial.print("\t");
+//  Serial.print(imu.angular_velocity.z); Serial.print("\t");
+//  Serial.print(imu.linear_acceleration.x); Serial.print("\t");
+//  Serial.print(imu.linear_acceleration.y); Serial.print("\t");
+//  Serial.println(imu.linear_acceleration.z);
 
   imu_pub.publish(&imu);
   imu.header.seq++;
