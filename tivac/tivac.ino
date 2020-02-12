@@ -106,9 +106,9 @@ void Update_Ultra_Sonic()
   digitalWrite(Trig, HIGH);
   delayMicroseconds(10);
   digitalWrite(Trig, LOW);
-//  duration = pulseIn(Echo, HIGH);
+  duration = pulseIn(Echo, HIGH, 10000);
   // convert the time into a distance
-//  cm = duration / 58; // / 29 / 2
+  cm = duration / 58; // / 29 / 2
 }
 
 void setup() {
