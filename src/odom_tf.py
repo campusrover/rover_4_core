@@ -1,4 +1,9 @@
 #!/usr/bin/env python
+
+"""
+borrowed/ adapted from 
+https://github.com/PacktPublishing/Learning-Robotics-using-Python-Second-Edition/blob/master/chapter_8_code/chefbot_bringup/scripts/diff_tf.py
+"""
 import rospy
 from math import sin, cos, pi
 from geometry_msgs.msg import Quaternion
@@ -18,32 +23,30 @@ max_ticks = 4294967296  # value set in tivac.h
 # callbacks 
 
 def lwheelCallback(msg):
-    global left_ticks_last, left_delta_ticks
-    ticks = msg.data
-    if left_ticks_last == None:
-        left_ticks_last = ticks
-    left_delta_ticks = ticks - left_ticks_last
-    if left_delta_ticks > max_ticks:  # odds are the encoder ticks wrapped around with a difference this large.
-        if ticks > left_ticks_last:  # wrap from low to high -> negative
-            ext_ticks = -max_ticks - (max_ticks - ticks)
-        else:                        # wrap from high to low -> positive
-            ext_ticks = max_ticks + (ticks + max_ticks) 
-        left_delta_ticks = ext_ticks - left_ticks_last
-    left_ticks_last = ticks
+    global left_ticks
+    left_ticks = msg.data
+    
 
 def rwheelCallback(msg):
-    global right_ticks_last, right_delta_ticks
-    ticks = msg.data 
-    if right_ticks_last == None:
-        right_ticks_last = ticks
-    right_delta_ticks = ticks - right_ticks_last
-    if left_delta_ticks > max_ticks:  # odds are the encoder ticks wrapped around with a difference this large.
-        if ticks > right_ticks_last:  # wrap from low to high -> negative
-            ext_ticks = -max_ticks - (max_ticks - ticks)
-        else:                        # wrap from high to low -> positive
-            ext_ticks = max_ticks + (ticks + max_ticks) 
-        right_delta_ticks = ext_ticks - right_ticks_last
-    right_ticks_last = ticks
+    global right_ticks
+    right_ticks = msg.data 
+   
+
+
+# helper methods
+
+def encoder_difference(curr_ticks, prev_ticks):
+    """
+    computes the change in ticks since the last time ticks were counted, accounting for wraparound
+    """
+    delta_ticks = curr_ticks - prev_ticks
+    if abs(delta_ticks) > max_ticks:  # odds are the encoder ticks wrapped around with a difference this large.
+        if curr_ticks > prev_ticks:  # wrap from low to high -> negative tick change
+            ext_ticks = -max_ticks - (max_ticks - curr_ticks)  # ext_ticks = "extended ticks", a tick count that exceeds max or -max ticks
+        else:                        # wrap from high to low -> positive tick change
+            ext_ticks = max_ticks + (curr_ticks + max_ticks) 
+        delta_ticks = ext_ticks - prev_ticks
+    return delta_ticks
     
 rospy.init_node("odom_core")
 
@@ -58,27 +61,35 @@ delta_left, delta_right, delta_theta = 0, 0, 0
 left_delta_ticks, right_delta_ticks = 0, 0
 x, y, z = 0, 0, 0
 rate = rospy.Rate(10)
-then = rospy.Time.now()
+then = rospy.Time.now().to_sec()
 
 while not rospy.is_shutdown():
     rate.sleep()
     # calc change in time
     now = rospy.Time.now()
-    elapsed_time = now - then
-    then = now
-    elapsed_time = elapsed_time.to_sec()
+    elapsed_time = now.to_sec() - then
+    then = now.to_sec()
+    #elapsed_time = elapsed_time.to_sec()
 
     # approxomate distance traveled based on change in encoder values
     if left_ticks_last == None or right_ticks_last == None:
         delta_left = 0
         delta_right = 0
+        left_ticks_last = left_ticks
+        right_ticks_last = right_ticks
     else:
+        # compute change in encoders
+        left_delta_ticks = encoder_difference(left_ticks, left_ticks_last)
+        right_delta_ticks = encoder_difference(right_ticks, right_ticks_last)
+        # update previous values to be current values
+        left_ticks_last = left_ticks
+        right_ticks_last = right_ticks
         # update with values from wheel callbacks
-        delta_left = left_delta_ticks / ticks_per_meter
+        delta_left = left_delta_ticks / ticks_per_meter  # meters traveled = number of encoder ticks in the last time slice / number of encoder tick in a meter
         delta_right = right_delta_ticks / ticks_per_meter
 
-    distance_traveled = (delta_left + delta_right) / 2
-    distance_turned = (delta_right - delta_left) / wheel_base_width  # book says this approximation only works for small angles, so IMU should probably be fused here
+    distance_traveled = (delta_left + delta_right) / 2  # average distance travelled of the two wheels 
+    distance_turned = (delta_right - delta_left) / wheel_base_width  # book says this approximation only works for small angles, so IMU should probably be fused here. result is, somehow, in radians
 
     # velocity
     vx = distance_traveled / elapsed_time
