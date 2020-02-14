@@ -14,7 +14,7 @@ with open(get_nearby_file('move_data.pickle'), 'rb') as infile:
 
 """
 'data' is a series of nested lists
-data[0] is linear
+data[0] is linear lists
 data[1] is angular
 
 linear[0] is velocity reported by odom
