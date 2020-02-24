@@ -38,6 +38,11 @@
             <origin rpy="0 0 0" xyz="0 0 0.06"/>
             <material name="red"/>
         </visual>
+        <collision>
+  11       <geometry>
+  12         <cylinder length="0.6" radius="0.2"/>
+  13       </geometry>
+  14     </collision>
     </link>
 
     <joint name="camera_to_base" type="fixed">
