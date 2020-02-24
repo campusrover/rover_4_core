@@ -16,7 +16,7 @@
     <arg name="set_frame_id" default="scan_link"/>
 
     <node pkg="hls_lfcd_lds_driver" type="hlds_laser_publisher" name="rover4_lds" output="screen">
-        <param name="port" value="/dev/LDS01"/>
+        <param name="port" value="/dev/ttyUSB0"/>
         <param name="frame_id" value="$(arg set_frame_id)"/>
     </node>
 

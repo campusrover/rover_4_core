@@ -1,5 +1,8 @@
-
 #include "tivac.h"
+#include "battery.h"
+#include "imu.h"
+#include "motor.h"
+#include "sonar.h"
 
 
 void cmd_cb(const geometry_msgs::Twist& msg) {
@@ -96,17 +99,17 @@ void do_Right_Encoder()
 }
 
 
-//void Update_Ultra_Sonic()
-//{
-//  digitalWrite(Trig, LOW);
-//  delayMicroseconds(2);
-//  digitalWrite(Trig, HIGH);
-//  delayMicroseconds(10);
-//  digitalWrite(Trig, LOW);
-//  duration = pulseIn(Echo, HIGH);
-//  // convert the time into a distance
-//  cm = duration / 58; // / 29 / 2
-//}
+void Update_Ultra_Sonic()
+{
+  digitalWrite(Trig, LOW);
+  delayMicroseconds(2);
+  digitalWrite(Trig, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(Trig, LOW);
+  duration = pulseIn(Echo, HIGH, 10000);
+  // convert the time into a distance
+  cm = duration / 58; // / 29 / 2
+}
 
 void setup() {
   // put your setup code here, to run once:
@@ -128,16 +131,16 @@ void setup() {
   pinMode(Right_Encoder_PinA, INPUT_PULLUP); // sets pin A as input
   pinMode(Right_Encoder_PinB, INPUT_PULLUP); // sets pin B as input
   attachInterrupt(Right_Encoder_PinA, do_Right_Encoder, RISING);
-//  // Sonar 
-//  pinMode(Trig, OUTPUT); // trigger pin
-//  pinMode(Echo, INPUT); // echo pin
-//  sonar.radiation_type = sonar.ULTRASOUND;
-//  sonar.field_of_view = 0.261799; // radians, adafruit's website cites a 15 degree FOV
-//  sonar.min_range = 0.02;
-//  sonar.max_range = 4; // some data sheets say 3m is max range, most others say 4, but also that measurements are most accurate < 250cm
-//  sonar_head.frame_id = "sonar_link"; // this is an assumption, can be changed later
-//  sonar_head.seq = 0;
-//  sonar.header = sonar_head;
+  // Sonar 
+  pinMode(Trig, OUTPUT); // trigger pin
+  pinMode(Echo, INPUT); // echo pin
+  sonar.radiation_type = sonar.ULTRASOUND;
+  sonar.field_of_view = 0.261799; // radians, adafruit's website cites a 15 degree FOV
+  sonar.min_range = 0.02;
+  sonar.max_range = 4; // some data sheets say 3m is max range, most others say 4, but also that measurements are most accurate < 250cm
+  sonar_head.frame_id = "sonar_link"; // this is an assumption, can be changed later
+  sonar_head.seq = 0;
+  sonar.header = sonar_head;
   // IMU
   imu.header.frame_id = "imu";
   imu.header.seq = 0;
@@ -152,7 +155,7 @@ void setup() {
   accelgyro.setZGyroOffset(-35);
   accelgyro.setXAccelOffset(-1035);
   accelgyro.setYAccelOffset(-1690);
-  accelgyro.setZAccelOffset(-215);
+  accelgyro.setZAccelOffset(-1145);
 
   // ROS
   nh.getHardware()->setBaud(115200);
@@ -161,7 +164,7 @@ void setup() {
   nh.advertise(pwm_status);
   nh.advertise(left_enc_pub);
   nh.advertise(right_enc_pub);
-//  nh.advertise(sonar_pub);
+  nh.advertise(sonar_pub);
   nh.advertise(imu_pub);
 }
 
@@ -169,7 +172,7 @@ void loop() {
   
   updateMotors();
   
-//  updateSonar();
+  updateSonar();
  
   updateIMU();
   
@@ -206,21 +209,21 @@ void updateMotors() {
   right_enc_pub.publish(&enc_r);
 }
 
-//void updateSonar() {
-//  // Update sonar, then publish
-//  Update_Ultra_Sonic();
-//  sonar.range = cm / 100.0;
-//  sonar_pub.publish(&sonar);
-//  sonar_head.seq++;
-//}
+void updateSonar() {
+  // Update sonar, then publish
+  Update_Ultra_Sonic();
+  sonar.range = cm / 100.0;
+  sonar_pub.publish(&sonar);
+  sonar_head.seq++;
+}
 
 void updateIMU() {
   accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
 
   //angular velocity conversion
-  auto f = [](int16_t av) {return av * (4000.0/65536.0) * (M_PI/180.0) * 25.0;};
+  auto f = [](int16_t av) {return av * (4000.0/65536.0) * (M_PI/180.0) / 25.0;};
   //linear acceleration conversation
-  auto g = [](int16_t la) {return la * (8.0 / 65536.0) * 9.81;};
+  auto g = [](int16_t la) {return la * (8.0 / 65536.0);};
   
   imu.angular_velocity.x = f(gx);
   imu.angular_velocity.y = f(gy);
@@ -246,5 +249,5 @@ void update_battery() {
   // may be useful in future, not necessary yet...
   // https://www.instructables.com/id/Arduino-Battery-Voltage-Indicator/ gives a brief example of how to measure battery voltage 
   battery_level = analogRead(PC_4) * (5.00 / 1023.00) * 2;
-  
+  Serial.println(battery_level);
 }

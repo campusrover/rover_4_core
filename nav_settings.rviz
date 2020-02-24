@@ -6,11 +6,14 @@ Panels:
       Expanded:
         - /Global Options1
         - /Status1
+        - /LaserScan1
         - /TF1
-        - /TF1/Frames1
-        - /RobotModel1
         - /Map1
-        - /Map2
+        - /Planner Plan1
+        - /Path1
+        - /Group1
+        - /Group1/Polygon1
+        - /Group1/Map1
       Splitter Ratio: 0.5
     Tree Height: 663
   - Class: rviz/Selection
@@ -57,42 +60,72 @@ Visualization Manager:
       Plane Cell Count: 10
       Reference Frame: <Fixed Frame>
       Value: true
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/LaserScan
+      Color: 255; 255; 255
+      Color Transformer: Intensity
+      Decay Time: 0
+      Enabled: true
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Max Intensity: 6132
+      Min Color: 0; 0; 0
+      Min Intensity: 102
+      Name: LaserScan
+      Position Transformer: XYZ
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.009999999776482582
+      Style: Points
+      Topic: /scan
+      Unreliable: false
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: true
     - Class: rviz/TF
       Enabled: true
       Frame Timeout: 15
       Frames:
-        All Enabled: false
+        All Enabled: true
         base_footprint:
-          Value: false
+          Value: true
         base_link:
           Value: true
         camera_depth_frame:
-          Value: false
+          Value: true
         camera_depth_optical_frame:
-          Value: false
+          Value: true
         camera_link:
           Value: true
         camera_rgb_frame:
-          Value: false
+          Value: true
         camera_rgb_optical_frame:
-          Value: false
+          Value: true
         imu:
-          Value: false
+          Value: true
         lwheel_link:
-          Value: false
+          Value: true
         map:
           Value: true
         odom:
           Value: true
         rwheel_link:
-          Value: false
+          Value: true
         scan_link:
           Value: true
         sonar_link:
-          Value: false
+          Value: true
       Marker Scale: 1
       Name: TF
-      Show Arrows: false
+      Show Arrows: true
       Show Axes: true
       Show Names: true
       Tree:
@@ -119,131 +152,6 @@ Visualization Manager:
                   {}
       Update Interval: 0
       Value: true
-    - Alpha: 1
-      Autocompute Intensity Bounds: true
-      Autocompute Value Bounds:
-        Max Value: 10
-        Min Value: -10
-        Value: true
-      Axis: Z
-      Channel Name: intensity
-      Class: rviz/LaserScan
-      Color: 255; 255; 255
-      Color Transformer: Intensity
-      Decay Time: 0
-      Enabled: true
-      Invert Rainbow: false
-      Max Color: 255; 255; 255
-      Max Intensity: 6162
-      Min Color: 0; 0; 0
-      Min Intensity: 101
-      Name: LaserScan
-      Position Transformer: XYZ
-      Queue Size: 10
-      Selectable: true
-      Size (Pixels): 3
-      Size (m): 0.009999999776482582
-      Style: Flat Squares
-      Topic: /scan
-      Unreliable: false
-      Use Fixed Frame: true
-      Use rainbow: true
-      Value: true
-    - Alpha: 0.5
-      Buffer Length: 1
-      Class: rviz/Range
-      Color: 255; 255; 255
-      Enabled: true
-      Name: Range
-      Queue Size: 100
-      Topic: /sonar_front
-      Unreliable: false
-      Value: true
-    - Alpha: 1
-      Autocompute Intensity Bounds: true
-      Autocompute Value Bounds:
-        Max Value: 10
-        Min Value: -10
-        Value: true
-      Axis: Z
-      Channel Name: intensity
-      Class: rviz/PointCloud2
-      Color: 255; 255; 255
-      Color Transformer: Intensity
-      Decay Time: 0
-      Enabled: true
-      Invert Rainbow: false
-      Max Color: 255; 255; 255
-      Max Intensity: 4096
-      Min Color: 0; 0; 0
-      Min Intensity: 0
-      Name: PointCloud2
-      Position Transformer: XYZ
-      Queue Size: 10
-      Selectable: true
-      Size (Pixels): 3
-      Size (m): 0.009999999776482582
-      Style: Flat Squares
-      Topic: /camera/depth/points
-      Unreliable: false
-      Use Fixed Frame: true
-      Use rainbow: true
-      Value: true
-    - Alpha: 1
-      Class: rviz/RobotModel
-      Collision Enabled: true
-      Enabled: true
-      Links:
-        All Links Enabled: true
-        Expand Joint Details: false
-        Expand Link Details: false
-        Expand Tree: false
-        Link Tree Style: Links in Alphabetic Order
-        base_footprint:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        base_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        camera_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        imu:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        lwheel_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        rwheel_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        scan_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        sonar_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-      Name: RobotModel
-      Robot Description: robot_description
-      TF Prefix: ""
-      Update Interval: 0
-      Value: true
-      Visual Enabled: false
     - Alpha: 0.699999988079071
       Class: rviz/Map
       Color Scheme: map
@@ -255,18 +163,26 @@ Visualization Manager:
       Use Timestamp: false
       Value: true
     - Alpha: 1
-      Axes Length: 1
-      Axes Radius: 0.10000000149011612
-      Class: rviz/Pose
-      Color: 255; 25; 0
+      Buffer Length: 1
+      Class: rviz/Path
+      Color: 239; 41; 41
       Enabled: true
-      Head Length: 0.30000001192092896
-      Head Radius: 0.10000000149011612
-      Name: Pose
-      Shaft Length: 1
-      Shaft Radius: 0.05000000074505806
-      Shape: Arrow
-      Topic: /move_base_simple/goal
+      Head Diameter: 0.30000001192092896
+      Head Length: 0.20000000298023224
+      Length: 0.30000001192092896
+      Line Style: Lines
+      Line Width: 0.029999999329447746
+      Name: Planner Plan
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Pose Color: 255; 85; 255
+      Pose Style: None
+      Radius: 0.029999999329447746
+      Shaft Diameter: 0.10000000149011612
+      Shaft Length: 0.10000000149011612
+      Topic: /move_base/NavfnROS/plan
       Unreliable: false
       Value: true
     - Alpha: 1
@@ -292,35 +208,34 @@ Visualization Manager:
       Topic: /move_base/DWAPlannerROS/local_plan
       Unreliable: false
       Value: true
-    - Alpha: 1
-      Buffer Length: 1
-      Class: rviz/Path
-      Color: 25; 255; 0
+    - Class: rviz/Group
+      Displays:
+        - Alpha: 1
+          Class: rviz/Polygon
+          Color: 25; 255; 0
+          Enabled: true
+          Name: Polygon
+          Topic: /move_base/local_costmap/footprint
+          Unreliable: false
+          Value: true
+        - Alpha: 0.699999988079071
+          Class: rviz/Map
+          Color Scheme: costmap
+          Draw Behind: true
+          Enabled: true
+          Name: Map
+          Topic: /move_base/local_costmap/costmap
+          Unreliable: false
+          Use Timestamp: false
+          Value: true
       Enabled: true
-      Head Diameter: 0.30000001192092896
-      Head Length: 0.20000000298023224
-      Length: 0.30000001192092896
-      Line Style: Lines
-      Line Width: 0.029999999329447746
-      Name: Path
-      Offset:
-        X: 0
-        Y: 0
-        Z: 0
-      Pose Color: 255; 85; 255
-      Pose Style: None
-      Radius: 0.029999999329447746
-      Shaft Diameter: 0.10000000149011612
-      Shaft Length: 0.10000000149011612
-      Topic: /move_base/DWAPlannerROS/global_plan
-      Unreliable: false
-      Value: true
+      Name: Group
     - Alpha: 0.699999988079071
       Class: rviz/Map
-      Color Scheme: map
-      Draw Behind: false
+      Color Scheme: costmap
+      Draw Behind: true
       Enabled: true
-      Name: Map
+      Name: Global Costmap
       Topic: /move_base/global_costmap/costmap
       Unreliable: false
       Use Timestamp: false
@@ -353,25 +268,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 13.52650260925293
+      Distance: 9.127334594726562
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.12321004271507263
-        Y: 0.3305847644805908
-        Z: -0.6062806844711304
+        X: 0.6357031464576721
+        Y: 0.9030714631080627
+        Z: 0.4261799454689026
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.9097977876663208
+      Pitch: 1.1747967004776
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 2.775369644165039
+      Yaw: 6.18678617477417
     Saved: ~
 Window Geometry:
   Displays:

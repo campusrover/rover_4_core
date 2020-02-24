@@ -39,10 +39,14 @@
             <material name="red"/>
         </visual>
         <collision>
-  11       <geometry>
-  12         <cylinder length="0.6" radius="0.2"/>
-  13       </geometry>
-  14     </collision>
+           <geometry>
+             <cylinder length="0.6" radius="0.2"/>
+           </geometry>
+         </collision>
+            <geometry>
+                <box size="0.32 0.32 0.12"/>
+            </geometry>
+        </collision>
     </link>
 
     <joint name="camera_to_base" type="fixed">
@@ -80,7 +84,7 @@
     <joint name="lidar_to_base" type="fixed">
         <parent link="base_link"/>
         <child link="scan_link"/>
-        <origin rpy="0 0 0" xyz="0.06 0 0.12"/>
+        <origin rpy="0 0 0" xyz="-0.06 0 0.12"/>
     </joint>
 
     <link name="scan_link">
@@ -96,7 +100,7 @@
     <joint name="lwheel_to_base" type="continuous">
         <parent link="base_link"/>
         <child link="lwheel_link"/>
-        <origin rpy="1.57 0 0" xyz="0 0.14 0"/>
+        <origin rpy="1.57 0 0" xyz="0 0.14 0.02"/>
     </joint>
 
     <link name="lwheel_link">
@@ -112,7 +116,7 @@
     <joint name="rwheel_to_base" type="continuous">
         <parent link="base_link"/>
         <child link="rwheel_link"/>
-        <origin rpy="-1.57 0 0" xyz="0 -0.14 0"/>
+        <origin rpy="-1.57 0 0" xyz="0 -0.14 0.02"/>
     </joint>
 
     <link name="rwheel_link">
@@ -126,9 +130,9 @@
     </link>
 
     <joint name="imu_to_base_link" type="fixed">
-        <parent link="imu"/>
-        <child link="base_link"/>
-        <origin rpy="0 0 0" xyz="0 0 0"/>
+        <parent link="base_link"/>
+        <child link="imu"/>
+        <origin rpy="0 0 0" xyz="0 0 0.01"/>
     </joint>
 
     <link name="imu">
