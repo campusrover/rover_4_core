@@ -42,6 +42,7 @@
            <geometry>
              <cylinder length="0.06" radius="0.02"/>
            </geometry>
+         <collision>
          </collision>
             <geometry>
                 <box size="0.32 0.32 0.12"/>
