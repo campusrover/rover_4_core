@@ -49,6 +49,43 @@ void cmd_cb(const geometry_msgs::Twist& msg) {
   pwm_status.publish(&pwm_pub);
 }
 
+void left_vel_cb(const std_msgs::Float32 msg) {
+  // individual left and right callbacks added to play nicely with hardware interface
+  float left_vel = msg.data;
+  // constrain value (left)
+  if (left_vel > MAX_LINEAR_VEL) {
+    left_vel = MAX_LINEAR_VEL;
+  } else if (left_vel < MIN_LINEAR_VEL) {
+    left_vel = MIN_LINEAR_VEL;
+  }
+  // convert to PWM (left)
+  if (left_vel > 0) {
+    left_PWM = (left_vel / MAX_LINEAR_VEL) * 255;
+  } else if (left_vel < 0) {
+    left_PWM = -(left_vel / MIN_LINEAR_VEL) * 255;
+  } else {
+    left_PWM = 0;
+  }
+}
+
+void right_vel_cb(const std_msgs::Float32 msg) {
+  float right_vel = msg.data;
+  // constrain value (right)
+  if (right_vel > MAX_LINEAR_VEL) {
+    right_vel = MAX_LINEAR_VEL;
+  } else if (right_vel < MIN_LINEAR_VEL) {
+    right_vel = MIN_LINEAR_VEL;
+  }
+  // convert to PWM (right)
+  if (right_vel > 0) {
+    right_PWM = (right_vel / MAX_LINEAR_VEL) * 255;
+  } else if (right_vel < 0) {
+    right_PWM = -(right_vel / MIN_LINEAR_VEL) * 255;
+  } else {
+    right_PWM = 0;
+  }
+}
+
 void left_motor(int pwm) {
   if (pwm > 0) {
     digitalWrite(INA_1,HIGH);
@@ -111,6 +148,7 @@ void Update_Ultra_Sonic()
   cm = duration / 58; // / 29 / 2
 }
 
+
 void setup() {
   // put your setup code here, to run once:
   // Motors
@@ -160,7 +198,9 @@ void setup() {
   // ROS
   nh.getHardware()->setBaud(115200);
   nh.initNode();
-  nh.subscribe(cmd_sub);
+  //nh.subscribe(cmd_sub); // disabled this subsrciption to play nice with hw interface
+  nh.subscribe(left_vel_sub);
+  nh.subscribe(right_vel_sub;)
   nh.advertise(pwm_status);
   nh.advertise(left_enc_pub);
   nh.advertise(right_enc_pub);
@@ -233,13 +273,7 @@ void updateIMU() {
   imu.linear_acceleration.y = g(ay);
   imu.linear_acceleration.z = g(az);
   
-//@debug
-//  Serial.print(imu.angular_velocity.x); Serial.print("\t");
-//  Serial.print(imu.angular_velocity.y); Serial.print("\t");
-//  Serial.print(imu.angular_velocity.z); Serial.print("\t");
-//  Serial.print(imu.linear_acceleration.x); Serial.print("\t");
-//  Serial.print(imu.linear_acceleration.y); Serial.print("\t");
-//  Serial.println(imu.linear_acceleration.z);
+
 
   imu_pub.publish(&imu);
   imu.header.seq++;

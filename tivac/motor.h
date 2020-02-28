@@ -51,9 +51,13 @@ volatile bool RightEncoderBSet;
 
 // callback functions have to be declared before their subscribers to compile
 void cmd_cb(const geometry_msgs::Twist& msg);
+void left_vel_cb(const std_msgs::Float32 msg);
+void right_vel_cb(const std_msgs::Float32 msg);
 
 // subscribers
 ros::Subscriber<geometry_msgs::Twist> cmd_sub("cmd_vel", &cmd_cb);
+ros::Subscriber<std_msgs::Float32> left_vel_sub("left_wheel_vel", &left_vel_cb);
+ros::Subscriber<std_msgs::Float32> right_vel_sub("right_wheel_vel", &right_vel_cb);
 // publishers (and the things they publish)
 std_msgs::String pub_string;
 ros::Publisher status_pub("cmd_vel_debug_topic", &pub_string);

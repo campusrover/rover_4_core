@@ -1,0 +1,21 @@
+<launch>
+    <!-- Rosserial node for communicating with tivac node over usb serial-->
+    <node name='serial_node' type='serial_node.py' pkg='rosserial_python'>
+        <param name='port' value='/dev/ttyACM0'/>
+        <param name='baud' value='115200'/>    
+    </node>
+    <!-- Hardware Interface -->
+    <node name='hardware_interface' type='hw_interface' pkg='rover_4_core'/>
+    <!-- URDF -->
+    <arg name="urdf_file" default="$(find xacro)/xacro --inorder '$(find rover_4_core)/description/urdf/rover.urdf'" />
+    <param name="robot_description" command="$(arg urdf_file)" />
+    <!-- Load controller config -->
+    <rosparam command="load" 
+              file="$(find rover_4_core)/hw_interface/config/common.yaml"/>
+
+    <node name="controller_spawner" 
+          pkg="controller_manager" 
+          type="spawner" 
+          output="screen" 
+          args="mobile_base_controller"/>
+</launch>
