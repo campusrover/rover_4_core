@@ -10,6 +10,7 @@ project(rover_4_core)
 find_package(catkin REQUIRED COMPONENTS
   rospy
   roscpp
+  controller_manager
   rosserial_python
   std_msgs
 )
@@ -106,7 +107,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES rover_4_core
-#  CATKIN_DEPENDS rospy rosserial_python std_msgs
+#  CATKIN_DEPENDS rospy roscpp rosserial_python std_msgs
 #  DEPENDS system_lib
 )
 
@@ -135,6 +136,9 @@ include_directories(
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 # add_executable(${PROJECT_NAME}_node src/rover_4_core_node.cpp)
+add_executable(hw_interface_node2 hw_interface/hw_interface.cpp)
+target_link_libraries(hw_interface_node2 ${catkin_LIBRARIES})
+#add_dependencies(hw_interface_node HW_INTERFACE_GENERATED_MESSAGES_CPP)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the

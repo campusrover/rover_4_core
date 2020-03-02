@@ -2,7 +2,7 @@
 #include <hardware_interface/joint_state_interface.h>
 #include <hardware_interface/robot_hw.h>
 #include <controller_manager/controller_manager.h>
-#include <ros.h>
+#include <ros/ros.h>
 #include <std_msgs/Int64.h>
 #include <std_msgs/Float32.h>
 #include <math.h>
@@ -13,19 +13,19 @@ public:
   MyRobot() 
  { 
    // connect and register the joint state interface
-   hardware_interface::JointStateHandle state_handle_a("A", &pos[0], &vel[0], &eff[0]);
+   hardware_interface::JointStateHandle state_handle_a("left_wheel", &pos[0], &vel[0], &eff[0]);
    jnt_state_interface.registerHandle(state_handle_a);
 
-   hardware_interface::JointStateHandle state_handle_b("B", &pos[1], &vel[1], &eff[1]);
+   hardware_interface::JointStateHandle state_handle_b("right_wheel", &pos[1], &vel[1], &eff[1]);
    jnt_state_interface.registerHandle(state_handle_b);
 
    registerInterface(&jnt_state_interface);
 
    // connect and register the joint position interface
-   hardware_interface::JointHandle pos_handle_a(jnt_state_interface.getHandle("A"), &cmd[0]);
+   hardware_interface::JointHandle pos_handle_a(jnt_state_interface.getHandle("left_wheel"), &cmd[0]);
    jnt_vel_interface.registerHandle(pos_handle_a);
 
-   hardware_interface::JointHandle pos_handle_b(jnt_state_interface.getHandle("B"), &cmd[1]);
+   hardware_interface::JointHandle pos_handle_b(jnt_state_interface.getHandle("right_wheel"), &cmd[1]);
    jnt_vel_interface.registerHandle(pos_handle_b);
 
    registerInterface(&jnt_vel_interface);
@@ -34,8 +34,8 @@ public:
    left_wheel_vel_pub = nh.advertise<std_msgs::Float32>("left_wheel_vel", 1);
    right_wheel_vel_pub = nh.advertise<std_msgs::Float32>("right_wheel_vel", 1);
 
-   left_encoder_sub = nh.subscribe("encoder_left", 1, &left_enc_cb, this);
-   right_encoder_sub = nh.subscribe("encoder_right", 1, &right_enc_cb, this);
+   left_encoder_sub = nh.subscribe("encoder_left", 1, &MyRobot::left_enc_cb, this);
+   right_encoder_sub = nh.subscribe("encoder_right", 1, &MyRobot::right_enc_cb, this);
   }
 
   void read(const ros::Duration &period)
@@ -151,16 +151,18 @@ private:
   ros::Subscriber right_encoder_sub;
 };
 
-int main()
+int main(int argc, char **argv)
 {
     /*
     * Main loop of the hardware interface.
     */
+    ros::init(argc, argv, "hw_interface");
     MyRobot robot;
     controller_manager::ControllerManager cm(&robot);
     ros::Time time_now;
     ros::Duration period_now;
     ros::Rate sleep_rate(10);
+    
 
     while (true)
     {

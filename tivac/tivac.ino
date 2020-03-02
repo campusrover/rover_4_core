@@ -49,7 +49,7 @@ void cmd_cb(const geometry_msgs::Twist& msg) {
   pwm_status.publish(&pwm_pub);
 }
 
-void left_vel_cb(const std_msgs::Float32 msg) {
+void left_vel_cb(const std_msgs::Float32& msg) {
   // individual left and right callbacks added to play nicely with hardware interface
   float left_vel = msg.data;
   // constrain value (left)
@@ -68,7 +68,7 @@ void left_vel_cb(const std_msgs::Float32 msg) {
   }
 }
 
-void right_vel_cb(const std_msgs::Float32 msg) {
+void right_vel_cb(const std_msgs::Float32& msg) {
   float right_vel = msg.data;
   // constrain value (right)
   if (right_vel > MAX_LINEAR_VEL) {
@@ -200,7 +200,7 @@ void setup() {
   nh.initNode();
   //nh.subscribe(cmd_sub); // disabled this subsrciption to play nice with hw interface
   nh.subscribe(left_vel_sub);
-  nh.subscribe(right_vel_sub;)
+  nh.subscribe(right_vel_sub);
   nh.advertise(pwm_status);
   nh.advertise(left_enc_pub);
   nh.advertise(right_enc_pub);

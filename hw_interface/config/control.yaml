@@ -4,6 +4,11 @@
 # to the param server via the roslaunch file (my_robot_control.launch).
 
 my_robot:
+  motor_commands:
+    pwm_update_frequency: 50.0
+    cmd_vel_topic:
+      left:  "/cmd_vel"
+      right: "/cmd_vel"
   # Publish all joint states -----------------------------------
   # Creates the /joint_states topic necessary in ROS
   joint_state_controller:

@@ -2,6 +2,7 @@
 #include <std_msgs/String.h>
 #include <geometry_msgs/Twist.h>
 #include <std_msgs/Int64.h>
+#include <std_msgs/Float32.h>
 
 #ifndef TIVAC_H_
 #define TIVAC_H_
@@ -51,8 +52,8 @@ volatile bool RightEncoderBSet;
 
 // callback functions have to be declared before their subscribers to compile
 void cmd_cb(const geometry_msgs::Twist& msg);
-void left_vel_cb(const std_msgs::Float32 msg);
-void right_vel_cb(const std_msgs::Float32 msg);
+void left_vel_cb(const std_msgs::Float32& msg);
+void right_vel_cb(const std_msgs::Float32& msg);
 
 // subscribers
 ros::Subscriber<geometry_msgs::Twist> cmd_sub("cmd_vel", &cmd_cb);
