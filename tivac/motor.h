@@ -2,6 +2,7 @@
 #include <std_msgs/String.h>
 #include <geometry_msgs/Twist.h>
 #include <std_msgs/Int64.h>
+#include <math.h>
 
 #ifndef TIVAC_H_
 #define TIVAC_H_
@@ -31,10 +32,17 @@
 #define ENCODER_MAX 4294967296
 #define ENCODER_MIN -4294967296
 
+// robot specs
+#define WHEEL_RADIUS 0.045
+#define WHEEL_BASE 0.26  // distance between wheels, in meters
+#define ENCODER_TICKS_PER_REV 800;
+
 // motor PWM's
 // Target PWM set based on twist
 int left_PWM = 0;
 int right_PWM = 0;
+float left_vel = 0;
+float right_vel = 0;
 // PWM that is actuallys ent to motor (by ramp)
 int left_PWM_out = 0;
 int right_PWM_out = 0;
@@ -48,6 +56,10 @@ volatile bool LeftEncoderBSet;
 volatile long Right_Encoder_Ticks = 0;
 //Variable to read current state of right encoder pin
 volatile bool RightEncoderBSet;
+long prev_left_encoder_ticks = 0;
+long prev_right_encoder_ticks = 0;
+double time_now = 0;
+double time_last = ros::Time::now().toSec();
 
 // callback functions have to be declared before their subscribers to compile
 void cmd_cb(const geometry_msgs::Twist& msg);

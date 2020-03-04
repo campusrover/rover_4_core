@@ -13,9 +13,10 @@ void cmd_cb(const geometry_msgs::Twist& msg) {
   float linear_vel = msg.linear.x;
   // angular component
   float angular_vel = msg.angular.z;
-  // combine values 
-  float left_vel = 1.0 * linear_vel - angular_vel * width / 2.0;
-  float right_vel = 1.0 * linear_vel + angular_vel * width / 2.0;
+  // combine values to get individual wheel velocities
+  left_vel = 1.0 * linear_vel - angular_vel * width / 2.0;
+  right_vel = 1.0 * linear_vel + angular_vel * width / 2.0;
+  
   // constrain value (left)
   if (left_vel > MAX_LINEAR_VEL) {
     left_vel = MAX_LINEAR_VEL;
@@ -29,24 +30,9 @@ void cmd_cb(const geometry_msgs::Twist& msg) {
     right_vel = MIN_LINEAR_VEL;
   }
   // convert to PWM (left)
-  if (left_vel > 0) {
-    left_PWM = (left_vel / MAX_LINEAR_VEL) * 255;
-  } else if (left_vel < 0) {
-    left_PWM = -(left_vel / MIN_LINEAR_VEL) * 255;
-  } else {
-    left_PWM = 0;
-  }
+  left_PWM = (left_vel / MAX_LINEAR_VEL) * 255;
   // convert to PWM (right)
-  if (right_vel > 0) {
-    right_PWM = (right_vel / MAX_LINEAR_VEL) * 255;
-  } else if (right_vel < 0) {
-    right_PWM = -(right_vel / MIN_LINEAR_VEL) * 255;
-  } else {
-    right_PWM = 0;
-  }
-  // for debugging, publish pwm
-  pwm_pub.data = right_PWM;
-  pwm_status.publish(&pwm_pub);
+  right_PWM = (right_vel / MAX_LINEAR_VEL) * 255;
 }
 
 void left_motor(int pwm) {
@@ -97,6 +83,28 @@ void do_Right_Encoder()
     Right_Encoder_Ticks = ENCODER_MAX - (ENCODER_MIN - Right_Encoder_Ticks);
   }
 }
+
+int encoder_difference(const int ticks, const int prev_ticks)
+  {
+    /*
+    * See src/odom_tf.py for the function of the same name for explanation for how this works. 
+    */
+    int delta_ticks = ticks - prev_ticks;
+    int extended_ticks;
+    if (abs(delta_ticks) > ENCODER_MAX)
+    {
+        if (ticks > prev_ticks)
+        {
+            extended_ticks = ENCODER_MIN - (ENCODER_MAX - ticks);
+        }
+        else
+        {
+            extended_ticks = ENCODER_MAX + (ticks + ENCODER_MAX);
+        }
+        delta_ticks = extended_ticks - prev_ticks;
+    }
+    return delta_ticks;
+  }
 
 
 void Update_Ultra_Sonic()
@@ -161,7 +169,6 @@ void setup() {
   nh.getHardware()->setBaud(115200);
   nh.initNode();
   nh.subscribe(cmd_sub);
-  nh.advertise(pwm_status);
   nh.advertise(left_enc_pub);
   nh.advertise(right_enc_pub);
   nh.advertise(sonar_pub);
@@ -182,7 +189,8 @@ void loop() {
 
 
 void updateMotors() {
-  // ramp PWM
+  // ramp PWM 
+  /*
   if (left_PWM - prev_left_PWM > RAMP_THRESHOLD){
     left_PWM_out = prev_left_PWM + RAMP_FACTOR;
   } else if (prev_left_PWM - left_PWM > RAMP_THRESHOLD) {
@@ -199,6 +207,17 @@ void updateMotors() {
   }
   prev_left_PWM = left_PWM_out;
   prev_right_PWM = right_PWM_out;
+  */
+  // get the change in encoders, calculate pervious speed
+  int left_encoder_change = encoder_difference(Left_Encoder_Ticks, prev_left_encoder_ticks);
+  int right_encoder_change = encoder_difference(Right_Encoder_Ticks, prev_right_encoder_ticks);
+  time_now = ros::Time::now().toSec();
+  double elapsed_time = time_now - time_last;
+  double wheel_circumference = 2 * WHEEL_RADIUS * M_PI;
+  float left_vel_actual = left_encoder_change / elapsed_time * wheel_circumference / ENCODER_TICKS_PER_REV;
+  float right_vel_actual = right_encoder_change / elapsed_time * wheel_circumference / ENCODER_TICKS_PER_REV;
+  float left_error = left_vel_actual - left_vel;
+  float right_error = right_vel_actual - right_vel;
   // move the motors
   left_motor(left_PWM_out);
   right_motor(right_PWM_out);
@@ -207,6 +226,8 @@ void updateMotors() {
   enc_r.data = Right_Encoder_Ticks;
   left_enc_pub.publish(&enc_l);  
   right_enc_pub.publish(&enc_r);
+  // push time back for next loop
+  time_last = time_now;
 }
 
 void updateSonar() {
