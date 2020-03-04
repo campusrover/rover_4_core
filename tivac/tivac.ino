@@ -216,8 +216,21 @@ void updateMotors() {
   double wheel_circumference = 2 * WHEEL_RADIUS * M_PI;
   float left_vel_actual = left_encoder_change / elapsed_time * wheel_circumference / ENCODER_TICKS_PER_REV;
   float right_vel_actual = right_encoder_change / elapsed_time * wheel_circumference / ENCODER_TICKS_PER_REV;
-  float left_error = left_vel_actual - left_vel;
-  float right_error = right_vel_actual - right_vel;
+  float left_error =  left_vel - left_vel_actual;
+  float right_error = right_vel - right_vel_actual;
+  // P roprotional
+  // no action needed
+  // I ntegral
+  left_accumulated_error += left_error * elapsed_time;
+  right_accumulated_error += right_error * elapsed_time;
+  // D erivative 
+  left_derivitive_error = (left_error - left_previous_error) / elapsed_time;
+  right_derivitive_error = (right_error - right_previous_error) / elapsed_time;
+  left_previous_error = left_error;
+  right_previous_error = right_error;
+
+  double left_PID_output = (left_error * PROPORTIONAL_GAIN) + (left_accumulated_error * INTEGRAL_GAIN) + (left_derivitive_error * DERIVITIVE_GAIN);
+  double right_PID_output = (right_error * PROPORTIONAL_GAIN) + (right_accumulated_error * INTEGRAL_GAIN) + (right_derivitive_error * DERIVITIVE_GAIN);
   // move the motors
   left_motor(left_PWM_out);
   right_motor(right_PWM_out);

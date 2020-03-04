@@ -37,6 +37,11 @@
 #define WHEEL_BASE 0.26  // distance between wheels, in meters
 #define ENCODER_TICKS_PER_REV 800;
 
+// PID defines
+#define PROPORTIONAL_GAIN 0
+#define INTEGRAL_GAIN 0
+#define DERIVITIVE_GAIN 0
+
 // motor PWM's
 // Target PWM set based on twist
 int left_PWM = 0;
@@ -60,6 +65,12 @@ long prev_left_encoder_ticks = 0;
 long prev_right_encoder_ticks = 0;
 double time_now = 0;
 double time_last = ros::Time::now().toSec();
+double left_accumulated_error = 0;
+double right_accumulated_error = 0;
+double left_derivitive_error = 0;
+double right_derivitive_error = 0;
+double left_previous_error = 0;
+double right_previous_error = 0;
 
 // callback functions have to be declared before their subscribers to compile
 void cmd_cb(const geometry_msgs::Twist& msg);
