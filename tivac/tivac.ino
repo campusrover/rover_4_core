@@ -35,6 +35,18 @@ void cmd_cb(const geometry_msgs::Twist& msg) {
   right_PWM = (right_vel / MAX_LINEAR_VEL) * 255;
 }
 
+void p_cb(const std_msgs::Float32& msg) {
+  PROPORTIONAL_GAIN = msg.data;
+}
+
+void i_cb(const std_msgs::Float32& msg) {
+  INTEGRAL_GAIN = msg.data;
+}
+
+void d_cb(const std_msgs::Float32& msg) {
+  DERIVITIVE_GAIN = msg.data;
+}
+
 void left_motor(int pwm) {
   if (pwm > 0) {
     digitalWrite(INA_1,HIGH);
@@ -131,6 +143,7 @@ void setup() {
   pinMode(INB_2,OUTPUT);
   pinMode(PWM_2,OUTPUT);
   // Quadrature encoders
+  time_last = nh.now().toSec();
   // Left encoder
   pinMode(Left_Encoder_PinA, INPUT_PULLUP); // sets pin A as input
   pinMode(Left_Encoder_PinB, INPUT_PULLUP); // sets pin B as input
@@ -169,10 +182,15 @@ void setup() {
   nh.getHardware()->setBaud(115200);
   nh.initNode();
   nh.subscribe(cmd_sub);
+  nh.subscribe(p_gain_sub);
+  nh.subscribe(i_gain_sub);
+  nh.subscribe(d_gain_sub);
   nh.advertise(left_enc_pub);
   nh.advertise(right_enc_pub);
   nh.advertise(sonar_pub);
   nh.advertise(imu_pub);
+  nh.advertise(PID_left);
+  nh.advertise(PID_right);
 }
 
 void loop() {
@@ -211,12 +229,12 @@ void updateMotors() {
   // get the change in encoders, calculate pervious speed
   int left_encoder_change = encoder_difference(Left_Encoder_Ticks, prev_left_encoder_ticks);
   int right_encoder_change = encoder_difference(Right_Encoder_Ticks, prev_right_encoder_ticks);
-  time_now = ros::Time::now().toSec();
+  time_now = nh.now().toSec();
   double elapsed_time = time_now - time_last;
   double wheel_circumference = 2 * WHEEL_RADIUS * M_PI;
-  float left_vel_actual = left_encoder_change / elapsed_time * wheel_circumference / ENCODER_TICKS_PER_REV;
+  float left_vel_actual = left_encoder_change / elapsed_time * wheel_circumference / ENCODER_TICKS_PER_REV;  // ticks / second to m/s
   float right_vel_actual = right_encoder_change / elapsed_time * wheel_circumference / ENCODER_TICKS_PER_REV;
-  float left_error =  left_vel - left_vel_actual;
+  float left_error =  left_vel - left_vel_actual;  // positive error = too slow (increase speed), negative error = too fast (decrease speed)
   float right_error = right_vel - right_vel_actual;
   // P roprotional
   // no action needed
@@ -224,16 +242,22 @@ void updateMotors() {
   left_accumulated_error += left_error * elapsed_time;
   right_accumulated_error += right_error * elapsed_time;
   // D erivative 
-  left_derivitive_error = (left_error - left_previous_error) / elapsed_time;
+  left_derivitive_error = (left_error - left_previous_error) / elapsed_time;  // further change in error from 0, faster error is changing (whether it is getting bigger or smaller, cannot say alone)
   right_derivitive_error = (right_error - right_previous_error) / elapsed_time;
   left_previous_error = left_error;
   right_previous_error = right_error;
 
-  double left_PID_output = (left_error * PROPORTIONAL_GAIN) + (left_accumulated_error * INTEGRAL_GAIN) + (left_derivitive_error * DERIVITIVE_GAIN);
-  double right_PID_output = (right_error * PROPORTIONAL_GAIN) + (right_accumulated_error * INTEGRAL_GAIN) + (right_derivitive_error * DERIVITIVE_GAIN);
+  double left_PID_sum = (left_error * PROPORTIONAL_GAIN) + (left_accumulated_error * INTEGRAL_GAIN) + (left_derivitive_error * DERIVITIVE_GAIN);  // PID sum is in arbitrary output units
+  double right_PID_sum = (right_error * PROPORTIONAL_GAIN) + (right_accumulated_error * INTEGRAL_GAIN) + (right_derivitive_error * DERIVITIVE_GAIN);
+
+  // convert PID output to a PWM
+  // going off the assumption that the PID sum is some sort of total representation of error, then that sum can be converted to a PWM and added to the previous PWM (could be negative?)
+  // let's also assume our top speed is 1 m/s and that every .1 m/s of error will result in a change in 25 PWM
+  left_PWM_out += (int)(left_PID_sum / 0.1 * 25);
+  right_PWM_out += (int)(right_PID_sum / 0.1 * 25);
   // move the motors
-  left_motor(left_PWM_out);
-  right_motor(right_PWM_out);
+  left_motor((int) left_PWM_out);
+  right_motor((int) right_PWM_out);
   // update encoders and publish 
   enc_l.data = Left_Encoder_Ticks;
   enc_r.data = Right_Encoder_Ticks;
@@ -241,6 +265,12 @@ void updateMotors() {
   right_enc_pub.publish(&enc_r);
   // push time back for next loop
   time_last = time_now;
+  // PID debug
+  int pwms[2] = {left_PWM_out, right_PWM_out};
+  PIDL.data = pwms[0];
+  PIDR.data = pwms[1];
+  PID_left.publish(&PIDL);
+  PID_right.publish(&PIDR);
 }
 
 void updateSonar() {
