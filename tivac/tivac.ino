@@ -93,15 +93,9 @@ int encoder_difference(const int ticks, const int prev_ticks)
     int extended_ticks;
     if (abs(delta_ticks) > ENCODER_MAX)
     {
-        if (ticks > prev_ticks)
-        {
-            extended_ticks = ENCODER_MIN - (ENCODER_MAX - ticks);
-        }
-        else
-        {
-            extended_ticks = ENCODER_MAX + (ticks + ENCODER_MAX);
-        }
+        extended_ticks = (ticks > prev_ticks) ? ENCODER_MIN - (ENCODER_MAX - ticks):ENCODER_MAX + (ticks + ENCODER_MAX);
         delta_ticks = extended_ticks - prev_ticks;
+        
     }
     return delta_ticks;
   }
@@ -197,25 +191,6 @@ void loop() {
 
 
 void updateMotors() {
-  // ramp PWM 
-  /*
-  if (left_PWM - prev_left_PWM > RAMP_THRESHOLD){
-    left_PWM_out = prev_left_PWM + RAMP_FACTOR;
-  } else if (prev_left_PWM - left_PWM > RAMP_THRESHOLD) {
-    left_PWM_out = prev_left_PWM - RAMP_FACTOR;
-  } else {
-    left_PWM_out = left_PWM;
-  }
-  if (right_PWM - prev_right_PWM > RAMP_THRESHOLD){
-    right_PWM_out = prev_right_PWM + RAMP_FACTOR;
-  } else if (prev_right_PWM - right_PWM > RAMP_THRESHOLD) {
-    right_PWM_out = prev_right_PWM - RAMP_FACTOR;
-  } else {
-    right_PWM_out = right_PWM;
-  }
-  prev_left_PWM = left_PWM_out;
-  prev_right_PWM = right_PWM_out;
-  */
   // get the change in encoders, calculate pervious speed
   int left_encoder_change = encoder_difference(Left_Encoder_Ticks, prev_left_encoder_ticks);
   int right_encoder_change = encoder_difference(Right_Encoder_Ticks, prev_right_encoder_ticks);
@@ -228,15 +203,9 @@ void updateMotors() {
   double right_error = right_vel - right_vel_actual;
 
   
-  left_PWM_out = prev_left_PWM + (left_error > 0 ? ceil(left_error):floor(left_error));
-  right_PWM_out = prev_right_PWM + (right_error > 0 ? ceil(right_error):floor(right_error));
-  // special case: 0 vel command -> ensure 0 PWM, to eliminate motor whine. 
-  if (left_vel == 0) {
-    left_PWM_out = 0;
-  }
-  if (right_vel == 0) {
-    right_PWM_out = 0;
-  }
+  // calculate pwm to send to motors. if target vel = 0, send 0 to eliminate motor whine. otherwise, scale according to error. 
+  left_PWM_out = (left_vel == 0) ? 0:prev_left_PWM + (left_error > 0 ? ceil(left_error):floor(left_error));  // equivalent to P controller w/ gain of 1
+  right_PWM_out = (right_vel == 0) ? 0:prev_right_PWM + (right_error > 0 ? ceil(right_error):floor(right_error));
 
   prev_left_PWM = left_PWM_out;
   prev_right_PWM = right_PWM_out;
