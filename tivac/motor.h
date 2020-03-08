@@ -21,7 +21,7 @@
 #define MAX_LINEAR_VEL 1.15
 #define MIN_LINEAR_VEL -1.15
 // ramp values - basically saying that if the difference in PWM's over time is grater than RAMP_THRESHOLD, then PWM will increment by RAMP_FACTOR
-#define RAMP_FACTOR 10
+#define RAMP_FACTOR 5
 #define RAMP_THRESHOLD 15
 
 // Encoder defines
@@ -38,19 +38,14 @@
 #define WHEEL_BASE 0.26  // distance between wheels, in meters
 #define ENCODER_TICKS_PER_REV 800;
 
-// PID defines
-/*
-#define PROPORTIONAL_GAIN 0
-#define INTEGRAL_GAIN 0
-#define DERIVITIVE_GAIN 0
-*/
+
 
 // motor PWM's
 // Target PWM set based on twist
 int left_PWM = 0;
 int right_PWM = 0;
-float left_vel = 0;
-float right_vel = 0;
+double left_vel = 0;
+double right_vel = 0;
 // PWM that is actuallys ent to motor (by ramp)
 int left_PWM_out = 0;
 int right_PWM_out = 0;
@@ -68,28 +63,14 @@ long prev_left_encoder_ticks = 0;
 long prev_right_encoder_ticks = 0;
 double time_now = 0;
 double time_last = 0;
-double left_accumulated_error = 0;
-double right_accumulated_error = 0;
-double left_derivitive_error = 0;
-double right_derivitive_error = 0;
-double left_previous_error = 0;
-double right_previous_error = 0;
-// PID Debugging
-float PROPORTIONAL_GAIN = 0;
-float INTEGRAL_GAIN = 0;
-float DERIVITIVE_GAIN = 0;
+
 
 // callback functions have to be declared before their subscribers to compile
 void cmd_cb(const geometry_msgs::Twist& msg);
-void p_cb(const std_msgs::Float32& msg);
-void i_cb(const std_msgs::Float32& msg);
-void d_cb(const std_msgs::Float32& msg);
+
 
 // subscribers
 ros::Subscriber<geometry_msgs::Twist> cmd_sub("cmd_vel", &cmd_cb);
-ros::Subscriber<std_msgs::Float32> p_gain_sub("p_gain", &p_cb);
-ros::Subscriber<std_msgs::Float32> i_gain_sub("i_gain", &i_cb);
-ros::Subscriber<std_msgs::Float32> d_gain_sub("d_gain", &d_cb);
 // publishers (and the things they publish)
 std_msgs::String pub_string;
 ros::Publisher status_pub("cmd_vel_debug_topic", &pub_string);
@@ -99,10 +80,10 @@ std_msgs::Int64 enc_l;
 ros::Publisher left_enc_pub("encoder_left", &enc_l);
 std_msgs::Int64 enc_r;
 ros::Publisher right_enc_pub("encoder_right", &enc_r);
-std_msgs::Int64 PIDL;
-ros::Publisher PID_left("PIDL", &PIDL);
-std_msgs::Int64 PIDR;
-ros::Publisher PID_right("PIDR", &PIDR);
+std_msgs::Float32 LVEL;
+ros::Publisher vel_left("vel_left", &LVEL);
+std_msgs::Float32 RVEL;
+ros::Publisher vel_right("vel_right", &RVEL);
 
 // other functions
 void right_motor(int pwm);
@@ -110,5 +91,6 @@ void left_motor(int pwm);
 void do_right_encoder();
 void do_left_encoder();
 void updateMotors();
+int encoder_difference(const int ticks, const int prev_ticks);
 
 #endif
