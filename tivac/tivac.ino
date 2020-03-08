@@ -3,6 +3,7 @@
 #include "imu.h"
 #include "motor.h"
 #include "sonar.h"
+#include "pid.h"
 
 
 void cmd_cb(const geometry_msgs::Twist& msg) {
@@ -164,11 +165,11 @@ void setup() {
   nh.getHardware()->setBaud(115200);
   nh.initNode();
   nh.subscribe(cmd_sub);
-  /*
+  
   nh.subscribe(p_gain_sub);
   nh.subscribe(i_gain_sub);
   nh.subscribe(d_gain_sub);
-  */
+  
   nh.advertise(left_enc_pub);
   nh.advertise(right_enc_pub);
   nh.advertise(sonar_pub);
@@ -202,10 +203,32 @@ void updateMotors() {
   double left_error =  left_vel - left_vel_actual;  // positive error = too slow (increase speed), negative error = too fast (decrease speed)
   double right_error = right_vel - right_vel_actual;
 
-  
+  /* working snippet - do not remove until full PID is working
   // calculate pwm to send to motors. if target vel = 0, send 0 to eliminate motor whine. otherwise, scale according to error. 
   left_PWM_out = (left_vel == 0) ? 0:prev_left_PWM + (left_error > 0 ? ceil(left_error):floor(left_error));  // equivalent to P controller w/ gain of 1
   right_PWM_out = (right_vel == 0) ? 0:prev_right_PWM + (right_error > 0 ? ceil(right_error):floor(right_error));
+  */
+
+  // P roprotional
+  // no action needed
+  // I ntegral
+  left_accumulated_error += left_error * elapsed_time;
+  right_accumulated_error += right_error * elapsed_time;
+  // D erivative 
+  left_derivitive_error = (left_error - left_previous_error) / elapsed_time;  // further change in error from 0, faster error is changing (whether it is getting bigger or smaller, cannot say alone)
+  right_derivitive_error = (right_error - right_previous_error) / elapsed_time;
+  left_previous_error = left_error;
+  right_previous_error = right_error;
+
+  double left_PID_sum = (left_error * PROPORTIONAL_GAIN) + (left_accumulated_error * INTEGRAL_GAIN) + (left_derivitive_error * DERIVITIVE_GAIN);  // PID sum is in arbitrary output units
+  double right_PID_sum = (right_error * PROPORTIONAL_GAIN) + (right_accumulated_error * INTEGRAL_GAIN) + (right_derivitive_error * DERIVITIVE_GAIN);
+
+  left_PWM_out = prev_left_PWM + (left_PID_sum > 0 ? ceil(left_PID_sum):floor(left_PID_sum)); 
+  right_PWM_out = prev_right_PWM + (right_PID_sum > 0 ? ceil(right_PID_sum):floor(right_PID_sum)); 
+
+  // eliminate motor whine 
+  left_PWM_out = (left_vel == 0 && abs(left_PWM_out < 10)) ? 0:left_PWM_out;
+  right_PWM_out = (right_vel == 0 && abs(right_PWM_out < 10)) ? 0:right_PWM_out;
 
   prev_left_PWM = left_PWM_out;
   prev_right_PWM = right_PWM_out;

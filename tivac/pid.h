@@ -1,7 +1,7 @@
 #include <ros.h>
 #include <std_msgs/Float32.h>
 #include "motor.h"
-#include "tivac.h"
+//#include "tivac.h"
 
 
 // PID defines
@@ -17,9 +17,9 @@ double right_derivitive_error = 0;
 double left_previous_error = 0;
 double right_previous_error = 0;
 // PID Debugging
-double PROPORTIONAL_GAIN = 0;
-double INTEGRAL_GAIN = 0;
-double DERIVITIVE_GAIN = 0;
+double PROPORTIONAL_GAIN = 5;
+double INTEGRAL_GAIN = 3;
+double DERIVITIVE_GAIN = 3;
 
 
 void p_cb(const std_msgs::Float32& msg);
