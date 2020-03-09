@@ -23,5 +23,5 @@
     <arg name="move_forward_only" value="$(arg move_forward_only)"/>
   </include>
 
-  <include file="$(find rover_4_core)/launch/slam.launch"/>
+  <include file="$(find rover_4_core)/launch/rviz_nav.launch"/>
 </launch>

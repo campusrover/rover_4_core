@@ -30,10 +30,6 @@ void cmd_cb(const geometry_msgs::Twist& msg) {
   } else if (right_vel < MIN_LINEAR_VEL) {
     right_vel = MIN_LINEAR_VEL;
   }
-  // convert to PWM (left)
-  left_PWM = (left_vel / MAX_LINEAR_VEL) * 255;
-  // convert to PWM (right)
-  right_PWM = (right_vel / MAX_LINEAR_VEL) * 255;
 }
 
 void left_motor(int pwm) {
@@ -244,7 +240,7 @@ void updateMotors() {
   right_enc_pub.publish(&enc_r);
   RVEL.data = right_vel_actual;
   LVEL.data = left_vel_actual;
-  vel_left.publish(&LVEL);
+  vel_left.publish(&LVEL);  // publishes in m/s
   vel_right.publish(&RVEL);
   // push time back for next loop
   time_last = time_now;
