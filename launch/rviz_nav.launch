@@ -1,4 +1,4 @@
   <!-- rviz -->
 <launch>
-  <node pkg="rviz" type="rviz" name="rviz" required="true" args="-d $(find rover_4_core)/settings.rviz" />
+  <node pkg="rviz" type="rviz" name="rviz" required="true" args="-d $(find rover_4_core)/nav_settings.rviz" />
 </launch>
