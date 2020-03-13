@@ -1,0 +1,11 @@
+<launch>
+    <!-- camera launcher -->
+    <include file="$(find astra_camera)/launch/astrapro.launch"/>
+    <!-- produce a laserscan from the depth image-->
+    <node pkg="depthimage_to_laserscan" type="depthimage_to_laserscan" name="depthimage_to_laserscan">
+        <param name="scan_height" value="10"/>
+        <remap from="image" to="/camera/depth/image_raw"/>
+        <remap from="camera_info" to="/camera/depth/camera_info"/>
+        <remap from="scan" to="depth_scan"/>
+    </node>
+</launch>
