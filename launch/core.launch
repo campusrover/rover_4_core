@@ -1,6 +1,6 @@
 <launch>
     <!-- Rosserial node for communicating with tivac node over usb serial-->
-    <node name='serial_node' type='serial_node.py' pkg='rosserial_python'>
+    <node name='rover_4_core' type='serial_node.py' pkg='rosserial_python'>
         <param name='port' value='/dev/ttyACM0'/>
         <param name='baud' value='115200'/>    
     </node>
@@ -27,5 +27,8 @@
         <param name="port" value="/dev/ttyUSB0"/>
         <param name="frame_id" value="$(arg set_frame_id)"/>
     </node>
+
+    <!-- diff_drive -->
+    <include file="$(find rover_4_core)/launch/diff_drive.launch"/>
 
 </launch>
