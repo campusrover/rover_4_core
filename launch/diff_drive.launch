@@ -20,8 +20,9 @@
           pkg="controller_manager" 
           type="spawner" 
           output="screen" 
-          ns="/"
-          args="mobile_base_controller joint_state_controller leftWheel_effort_controller rightWheel_effort_controller"/>
+          args="mobile_base_controller"> <!-- joint_state_controller leftWheel_effort_controller rightWheel_effort_controller -->
+          <remap from="/mobile_base_controller/cmd_vel" to="/cmd_vel"/>
+    </node>
 
     
 </launch>

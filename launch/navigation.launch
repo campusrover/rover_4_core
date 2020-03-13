@@ -30,4 +30,6 @@
           
           args="-d $(find rover_4_core)/nav_settings.rviz"/>
   </group>
+  <!-- Diff drive controller -->
+  <include file="$(find rover_4_core)/launch/diff_drive.launch"/>
 </launch>

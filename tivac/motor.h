@@ -3,6 +3,8 @@
 #include <geometry_msgs/Twist.h>
 #include <std_msgs/Int64.h>
 #include <std_msgs/Float32.h>
+#include <std_msgs/Float32.h>
+#include <math.h>
 
 #ifndef TIVAC_H_
 #define TIVAC_H_
@@ -17,8 +19,8 @@
 #define PWM_2 PC_6
 
 // min and max vel
-#define MAX_LINEAR_VEL 1.15
-#define MIN_LINEAR_VEL -1.15
+#define MAX_LINEAR_VEL 0.8  // after some testing, i believe this is the true max speed of our wheels (to be safe, it can approach .88)
+#define MIN_LINEAR_VEL -0.8
 // ramp values - basically saying that if the difference in PWM's over time is grater than RAMP_THRESHOLD, then PWM will increment by RAMP_FACTOR
 #define RAMP_FACTOR 10
 #define RAMP_THRESHOLD 15
@@ -32,10 +34,17 @@
 #define ENCODER_MAX 4294967296
 #define ENCODER_MIN -4294967296
 
+// robot specs
+#define WHEEL_RADIUS 0.045
+#define WHEEL_BASE 0.26  // distance between wheels, in meters
+#define ENCODER_TICKS_PER_REV 800;
+
 // motor PWM's
 // Target PWM set based on twist
 int left_PWM = 0;
 int right_PWM = 0;
+double left_vel = 0;
+double right_vel = 0;
 // PWM that is actuallys ent to motor (by ramp)
 int left_PWM_out = 0;
 int right_PWM_out = 0;
@@ -49,6 +58,11 @@ volatile bool LeftEncoderBSet;
 volatile long Right_Encoder_Ticks = 0;
 //Variable to read current state of right encoder pin
 volatile bool RightEncoderBSet;
+long prev_left_encoder_ticks = 0;
+long prev_right_encoder_ticks = 0;
+double time_now = 0;
+double time_last = 0;
+
 
 // callback functions have to be declared before their subscribers to compile
 void cmd_cb(const geometry_msgs::Twist& msg);
@@ -56,7 +70,7 @@ void left_vel_cb(const std_msgs::Float32& msg);
 void right_vel_cb(const std_msgs::Float32& msg);
 
 // subscribers
-ros::Subscriber<geometry_msgs::Twist> cmd_sub("cmd_vel", &cmd_cb);
+//ros::Subscriber<geometry_msgs::Twist> cmd_sub("cmd_vel", &cmd_cb);
 ros::Subscriber<std_msgs::Float32> left_vel_sub("left_wheel_vel", &left_vel_cb);
 ros::Subscriber<std_msgs::Float32> right_vel_sub("right_wheel_vel", &right_vel_cb);
 // publishers (and the things they publish)
@@ -68,6 +82,10 @@ std_msgs::Int64 enc_l;
 ros::Publisher left_enc_pub("encoder_left", &enc_l);
 std_msgs::Int64 enc_r;
 ros::Publisher right_enc_pub("encoder_right", &enc_r);
+std_msgs::Float32 LVEL;
+ros::Publisher vel_left("vel_left", &LVEL);
+std_msgs::Float32 RVEL;
+ros::Publisher vel_right("vel_right", &RVEL);
 
 // other functions
 void right_motor(int pwm);

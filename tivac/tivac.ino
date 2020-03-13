@@ -3,6 +3,7 @@
 #include "imu.h"
 #include "motor.h"
 #include "sonar.h"
+#include "pid.h"
 
 
 void cmd_cb(const geometry_msgs::Twist& msg) {
@@ -51,38 +52,25 @@ void cmd_cb(const geometry_msgs::Twist& msg) {
 
 void left_vel_cb(const std_msgs::Float32& msg) {
   // individual left and right callbacks added to play nicely with hardware interface
-  float left_vel = msg.data;
+  // must convert from rads/ sec to m/s 
+  left_vel = msg.data;
+  //left_vel *= WHEEL_RADIUS; // why? wheel circumference = 2*pi*r. 2*pi radians in a rotation. 2*pi*r / 2*pi = r. 
   // constrain value (left)
   if (left_vel > MAX_LINEAR_VEL) {
     left_vel = MAX_LINEAR_VEL;
   } else if (left_vel < MIN_LINEAR_VEL) {
     left_vel = MIN_LINEAR_VEL;
   }
-  // convert to PWM (left)
-  if (left_vel > 0) {
-    left_PWM = (left_vel / MAX_LINEAR_VEL) * 255;
-  } else if (left_vel < 0) {
-    left_PWM = -(left_vel / MIN_LINEAR_VEL) * 255;
-  } else {
-    left_PWM = 0;
-  }
 }
 
 void right_vel_cb(const std_msgs::Float32& msg) {
-  float right_vel = msg.data;
+  right_vel = msg.data;
+  //right_vel *= WHEEL_RADIUS;
   // constrain value (right)
   if (right_vel > MAX_LINEAR_VEL) {
     right_vel = MAX_LINEAR_VEL;
   } else if (right_vel < MIN_LINEAR_VEL) {
     right_vel = MIN_LINEAR_VEL;
-  }
-  // convert to PWM (right)
-  if (right_vel > 0) {
-    right_PWM = (right_vel / MAX_LINEAR_VEL) * 255;
-  } else if (right_vel < 0) {
-    right_PWM = -(right_vel / MIN_LINEAR_VEL) * 255;
-  } else {
-    right_PWM = 0;
   }
 }
 
@@ -135,6 +123,22 @@ void do_Right_Encoder()
   }
 }
 
+int encoder_difference(const int ticks, const int prev_ticks)
+  {
+    /*
+    * See src/odom_tf.py for the function of the same name for explanation for how this works. 
+    */
+    int delta_ticks = ticks - prev_ticks;
+    int extended_ticks;
+    if (abs(delta_ticks) > ENCODER_MAX)
+    {
+        extended_ticks = (ticks > prev_ticks) ? ENCODER_MIN - (ENCODER_MAX - ticks):ENCODER_MAX + (ticks + ENCODER_MAX);
+        delta_ticks = extended_ticks - prev_ticks;
+        
+    }
+    return delta_ticks;
+  }
+
 
 void Update_Ultra_Sonic()
 {
@@ -148,7 +152,6 @@ void Update_Ultra_Sonic()
   cm = duration / 58; // / 29 / 2
 }
 
-
 void setup() {
   // put your setup code here, to run once:
   // Motors
@@ -161,6 +164,7 @@ void setup() {
   pinMode(INB_2,OUTPUT);
   pinMode(PWM_2,OUTPUT);
   // Quadrature encoders
+  time_last = nh.now().toSec();
   // Left encoder
   pinMode(Left_Encoder_PinA, INPUT_PULLUP); // sets pin A as input
   pinMode(Left_Encoder_PinB, INPUT_PULLUP); // sets pin B as input
@@ -198,14 +202,15 @@ void setup() {
   // ROS
   nh.getHardware()->setBaud(115200);
   nh.initNode();
-  //nh.subscribe(cmd_sub); // disabled this subsrciption to play nice with hw interface
-  nh.subscribe(left_vel_sub);
+  //nh.subscribe(cmd_sub);
   nh.subscribe(right_vel_sub);
-  nh.advertise(pwm_status);
+  nh.subscribe(left_vel_sub);
   nh.advertise(left_enc_pub);
   nh.advertise(right_enc_pub);
   nh.advertise(sonar_pub);
   nh.advertise(imu_pub);
+  nh.advertise(vel_left);
+  nh.advertise(vel_right);
 }
 
 void loop() {
@@ -216,29 +221,54 @@ void loop() {
  
   updateIMU();
   
-  delay(10);
+  delay(100);
   nh.spinOnce();
 }
 
 
 void updateMotors() {
-  // ramp PWM
-  if (left_PWM - prev_left_PWM > RAMP_THRESHOLD){
-    left_PWM_out = prev_left_PWM + RAMP_FACTOR;
-  } else if (prev_left_PWM - left_PWM > RAMP_THRESHOLD) {
-    left_PWM_out = prev_left_PWM - RAMP_FACTOR;
-  } else {
-    left_PWM_out = left_PWM;
-  }
-  if (right_PWM - prev_right_PWM > RAMP_THRESHOLD){
-    right_PWM_out = prev_right_PWM + RAMP_FACTOR;
-  } else if (prev_right_PWM - right_PWM > RAMP_THRESHOLD) {
-    right_PWM_out = prev_right_PWM - RAMP_FACTOR;
-  } else {
-    right_PWM_out = right_PWM;
-  }
+  // get the change in encoders, calculate pervious speed
+  int left_encoder_change = encoder_difference(Left_Encoder_Ticks, prev_left_encoder_ticks);
+  int right_encoder_change = encoder_difference(Right_Encoder_Ticks, prev_right_encoder_ticks);
+  time_now = nh.now().toSec();
+  double elapsed_time = time_now - time_last;
+  double wheel_circumference = 2 * WHEEL_RADIUS * M_PI;
+  double left_vel_actual = left_encoder_change / elapsed_time * wheel_circumference / ENCODER_TICKS_PER_REV;  // ticks / second to m/s
+  double right_vel_actual = right_encoder_change / elapsed_time * wheel_circumference / ENCODER_TICKS_PER_REV;
+  double left_error =  left_vel - left_vel_actual;  // positive error = too slow (increase speed), negative error = too fast (decrease speed)
+  double right_error = right_vel - right_vel_actual;
+
+  /* working snippet - do not remove until full PID is working
+  // calculate pwm to send to motors. if target vel = 0, send 0 to eliminate motor whine. otherwise, scale according to error. 
+  left_PWM_out = (left_vel == 0) ? 0:prev_left_PWM + (left_error > 0 ? ceil(left_error):floor(left_error));  // equivalent to P controller w/ gain of 1
+  right_PWM_out = (right_vel == 0) ? 0:prev_right_PWM + (right_error > 0 ? ceil(right_error):floor(right_error));
+  */
+
+  // P roprotional
+  // no action needed
+  // I ntegral
+  left_accumulated_error += left_error * elapsed_time;
+  right_accumulated_error += right_error * elapsed_time;
+  // D erivative 
+  left_derivitive_error = (left_error - left_previous_error) / elapsed_time;  // further change in error from 0, faster error is changing (whether it is getting bigger or smaller, cannot say alone)
+  right_derivitive_error = (right_error - right_previous_error) / elapsed_time;
+  left_previous_error = left_error;
+  right_previous_error = right_error;
+
+  double left_PID_sum = (left_error * PROPORTIONAL_GAIN) + (left_accumulated_error * INTEGRAL_GAIN) + (left_derivitive_error * DERIVITIVE_GAIN);  // PID sum is in arbitrary output units
+  double right_PID_sum = (right_error * PROPORTIONAL_GAIN) + (right_accumulated_error * INTEGRAL_GAIN) + (right_derivitive_error * DERIVITIVE_GAIN);
+
+  left_PWM_out = prev_left_PWM + (left_PID_sum > 0 ? ceil(left_PID_sum):floor(left_PID_sum)); 
+  right_PWM_out = prev_right_PWM + (right_PID_sum > 0 ? ceil(right_PID_sum):floor(right_PID_sum)); 
+
+  // eliminate motor whine 
+  left_PWM_out = (left_vel == 0 && abs(left_PWM_out < 10)) ? 0:left_PWM_out;
+  right_PWM_out = (right_vel == 0 && abs(right_PWM_out < 10)) ? 0:right_PWM_out;
+
   prev_left_PWM = left_PWM_out;
   prev_right_PWM = right_PWM_out;
+  prev_left_encoder_ticks = Left_Encoder_Ticks;
+  prev_right_encoder_ticks = Right_Encoder_Ticks;
   // move the motors
   left_motor(left_PWM_out);
   right_motor(right_PWM_out);
@@ -247,6 +277,12 @@ void updateMotors() {
   enc_r.data = Right_Encoder_Ticks;
   left_enc_pub.publish(&enc_l);  
   right_enc_pub.publish(&enc_r);
+  RVEL.data = right_vel_actual;
+  LVEL.data = left_vel_actual;
+  vel_left.publish(&LVEL);  // publishes in m/s
+  vel_right.publish(&RVEL);
+  // push time back for next loop
+  time_last = time_now;
 }
 
 void updateSonar() {
@@ -273,7 +309,13 @@ void updateIMU() {
   imu.linear_acceleration.y = g(ay);
   imu.linear_acceleration.z = g(az);
   
-
+//@debug
+//  Serial.print(imu.angular_velocity.x); Serial.print("\t");
+//  Serial.print(imu.angular_velocity.y); Serial.print("\t");
+//  Serial.print(imu.angular_velocity.z); Serial.print("\t");
+//  Serial.print(imu.linear_acceleration.x); Serial.print("\t");
+//  Serial.print(imu.linear_acceleration.y); Serial.print("\t");
+//  Serial.println(imu.linear_acceleration.z);
 
   imu_pub.publish(&imu);
   imu.header.seq++;
