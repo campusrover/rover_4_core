@@ -1,7 +1,7 @@
 <launch>
   <!-- Arguments -->
   <arg name="model" default="rover"/>
-  <arg name="cmd_vel_topic" default="/mobile_base_controller/cmd_vel" />
+  <arg name="cmd_vel_topic" default="/cmd_vel" />
   <arg name="odom_topic" default="odom" />
   <arg name="move_forward_only" default="true"/>
   <arg name="scan_topic" default="scan"/>

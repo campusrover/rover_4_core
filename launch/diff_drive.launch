@@ -4,10 +4,6 @@
         <remap from="/rover_4_base/cmd_vel" to="/cmd_vel"/>
         <remap from="/rover_4_base/odom" to="/odom"/>
     </node>
-    <!-- URDF -->
-    <arg name="urdf_file" default="$(find xacro)/xacro --inorder '$(find rover_4_core)/description/urdf/rover.urdf'" />
-    <param name="robot_description" command="$(arg urdf_file)" />
-    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
     <!-- Load controller config -->
     <rosparam command="load" 
               file="$(find rover_4_core)/hw_interface/config/common.yaml"/>
