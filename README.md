@@ -1,6 +1,7 @@
 # Campus Rover 4 Prototype + final core
 
 "low level" code for the campus rover 4 platform
+**`hardware_interface` is the most up to date branch of this repo with regards to accurate movement and odometry**
 
 for a status report of this project, [read this page](https://campus-rover.gitbook.io/lab-notebook/cr-package/campus-rover-4/progress-report). 
 
