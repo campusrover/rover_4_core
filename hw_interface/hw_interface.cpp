@@ -108,20 +108,20 @@ public:
 private:
   hardware_interface::JointStateInterface jnt_state_interface;
   hardware_interface::VelocityJointInterface jnt_vel_interface;
-  double cmd[2];
-  double pos[2];
-  double vel[2];
-  double eff[2];
-  double wheel_vels[2];
+  double cmd[2] = {0, 0};
+  double pos[2] = {0, 0};
+  double vel[2] = {0, 0};
+  double eff[2] = {0, 0};
+  double wheel_vels[2] = {0, 0};
   ros::Time curr_update_time, prev_update_time;
   float wheel_radius = 0.045; // meters
   int ticks_left, ticks_right;
 
-  // TODO: publishers for wheel velicities to robot
+  // publishers for wheel velicities to robot
   ros::Publisher left_wheel_vel_pub;
   ros::Publisher right_wheel_vel_pub;
 
-  // TODO: subscribers for encoders from robot
+  // subscribers for encoders from robot
   ros::Subscriber left_encoder_sub;
   ros::Subscriber right_encoder_sub;
 };
@@ -137,7 +137,7 @@ int main(int argc, char **argv)
     ros::Time time_now;
     ros::Duration period_now;
     ros::Rate sleep_rate(10);
-    ros::AsyncSpinner spinner(2);
+    ros::AsyncSpinner spinner(2);  // this is critical to allowing the hardware interface to work
     spinner.start();
 
     while (ros::ok())
